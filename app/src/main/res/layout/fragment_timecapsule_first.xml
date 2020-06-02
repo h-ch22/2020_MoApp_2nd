@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom = "60dp">
+
+    <TextView
+        android:id="@+id/title_timecapsule"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight = "1"
+        android:layout_gravity="center"
+        android:fontFamily="@font/sdgothicneo_eb"
+        android:text="타임캡슐"
+        android:textColor="#000000"
+        android:textSize="40sp"/>
+    
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight = "15"
+        android:paddingBottom = "10dp"
+        android:text = "아직 타임캡슐에 보관된 자료가 없습니다."
+        android:gravity = "center"
+        android:fontFamily="@font/sdgothicneo_m"
+        android:textColor="#000000"/>
+
+    <Button
+        android:id = "@+id/btn_makeTimeCapsule"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text = "타임캡슐 만들기"
+        android:background = "@drawable/btn_rounded_shape"
+        android:drawableStart="@drawable/ic_add"
+        android:paddingStart="30dp"
+        android:paddingEnd = "30dp"
+        android:drawablePadding="15dp"
+        android:textColor = "#ffffff"
+        android:textSize = "20sp"
+        android:fontFamily="@font/sdgothicneo_bold"
+        android:layout_gravity = "center"/>
+        
+
+</LinearLayout>

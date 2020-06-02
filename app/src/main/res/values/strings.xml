@@ -1,0 +1,28 @@
+<resources>
+    <string name="facebook_app_id">3026934910685818</string> <string name="fb_login_protocol_scheme">fb3026934910685818</string>
+    <string name="app_name">2020_MoApp_2nd</string>
+    <string name="Welcome">반가워요!</string>
+    <string name="btn_startText">시작하기</string>
+    <string name="tutorial_registerTitle">당신에 대해\n더 깊게 알아보고 싶어요.</string>
+    <string name="name">이름</string>
+    <string name="e_mail">E-Mail</string>
+    <string name="birth">생년월일</string>
+    <string name="phoneNumber">전화번호</string>
+    <string name="male">남성</string>
+    <string name="female">여성</string>
+    <string name="signin">로그인하기</string>
+    <string name="signup">가입하기</string>
+    <string name="password">비밀번호</string>
+    <string name="tutorialFinish">이제 시작합니다.</string>
+    <string name="login">환영합니다!</string>
+    <string name="activate_account">계정 활성화</string>
+    <string name="activate_selection">계정 활성화를 위해 인증 수단을 선택해야합니다.\n아래 수단 중 하나를 선택해주세요.</string>
+    <string name="activate_sms">SMS 인증</string>
+    <string name="activate_email">이메일 인증</string>
+    <string name="forgot_password">로그인에 문제가 있나요?</string>
+    <string name="register">회원가입</string>
+    <string name="sendEmail">재설정 링크가 포함된 메일 발송하기</string>
+    <string name="cancel">취소</string>
+    <string name="descript_reset">로그인에 문제가 있나요?\n아래 상자에 E-mail 주소를 입력해주세요.\nE-mail로 비밀번호 재설정 링크를 보내드립니다.</string>
+    <string name="title_forgot">도움이 필요하신가요?</string>
+</resources>

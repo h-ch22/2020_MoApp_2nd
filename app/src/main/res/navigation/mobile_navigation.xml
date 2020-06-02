@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/menuHome">
+
+    <fragment
+        android:id="@+id/menuHome"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.Home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/menuFriends"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.Friends.FriendsFragment"
+        android:label="Diary"
+        tools:layout="@layout/fragment_friends" />
+
+    <fragment
+        android:id="@+id/menuTimeCapsule"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.TimeCapsule.TimeCapsuleFragment"
+        android:label="TimeCapsule"
+        tools:layout="@layout/fragment_timecapsule" />
+
+    <fragment
+        android:id="@+id/menuMyPage"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.MyPage.MyPageFragment"
+        android:label="My Page"
+        tools:layout="@layout/fragment_mypage" />
+</navigation>

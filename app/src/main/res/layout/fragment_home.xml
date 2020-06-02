@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_home"
+    android:background="#ffffff"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.Home.HomeFragment">
+
+    <LinearLayout
+        android:id="@+id/linearLayout5"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart = "19dp"
+            android:paddingEnd = "19dp"
+            android:background="#efefef"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/linearLayout2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="20"
+
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/homeDateYear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sdgothicneo_regular"
+                    android:text="0000년"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/homeDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sdgothicneo_eb"
+                    android:text="00월 00일"
+                    android:textColor="#000000"
+                    android:textSize="25sp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/calendarBtn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_weight=".5"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/ic_calendar"
+                android:fontFamily="@font/sdgothicneo_m"
+                android:paddingTop = "5dp"
+                android:text="00"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:orientation="horizontal"
+            android:padding="10sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/linearLayout3">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/btn_rounded"
+                android:orientation="horizontal"
+                android:scrollbarTrackVertical="@drawable/ic_email">
+
+                <ImageView
+                    android:id="@+id/home_myprofile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:paddingLeft="10sp"
+                    android:paddingRight="10sp"
+                    app:srcCompat="@drawable/ic_user" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.9"
+                    android:orientation="vertical"
+                    android:paddingLeft="10sp"
+                    android:paddingRight="10sp">
+
+                    <LinearLayout
+                        android:id = "@+id/homeLL"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation = "horizontal"
+                        android:layout_weight = "1">
+
+
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/home_contents"
+                        android:layout_width="285dp"
+                        android:layout_height="113dp"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:fontFamily="@font/nanumpen"
+                        android:textStyle="italic"
+                        android:layout_gravity="center"
+                        android:inputType="textPersonName"
+                        android:hint="당신의 하루를 알려주세요."
+                        android:textColorHint="#000000"
+                        android:textSize="14sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/uploadbtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.9"
+                            android:paddingStart = "12dp"
+                            android:background = "#00ffffff"
+                            android:drawableStart="@drawable/ic_upload"
+                            android:fontFamily="@font/sdgothicneo_bold"
+                            android:gravity="center_vertical"
+                            android:text=" 업로드"
+                            android:layout_gravity="center"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/fileBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.9"
+                            android:background = "#00ffffff"
+                            android:drawableStart="@drawable/ic_file"
+                            android:fontFamily="@font/sdgothicneo_bold"
+                            android:gravity="center_vertical"
+                            android:text="  사진 첨부"
+                            android:layout_gravity="center"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+                        <Switch
+                            android:id="@+id/sharing_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.01"
+                            android:layout_gravity = "center"
+                            android:checked="false"
+                            android:fontFamily="@font/sdgothicneo_bold"
+                            android:paddingLeft="10sp"
+                            android:paddingRight="10sp"
+                            android:splitTrack="false"
+                            android:text="나만 보기  "
+                            android:textAlignment="center"
+                            android:textColor="#000000"
+                            android:textSize="12sp"
+                            android:theme="@style/SCBSwitch" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/title_timecapsule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/sdgothicneo_bold"
+            android:text="타임캡슐"
+            android:textColor="#000000"
+            android:textSize="40sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/img_status_timecapsule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/img_timecapsule_null"
+                app:layout_constraintStart_toStartOf="@+id/title_timecapsule"
+                app:layout_constraintTop_toTopOf="@+id/title_timecapsule" />
+
+            <TextView
+                android:id = "@+id/DateRemain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text = "0년 0월 0주 0일"
+                android:gravity = "center_horizontal"
+                android:paddingTop = "85dp"
+                android:textColor= "#ffffff"
+                android:textSize = "15sp"
+                android:fontFamily="@font/sdgothicneo_m"/>
+
+            <TextView
+                android:id = "@+id/TimeRemain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text = "00:00:00"
+                android:gravity = "center_horizontal"
+                android:paddingTop = "105dp"
+                android:textColor= "#ffffff"
+                android:textSize = "30sp"
+                android:fontFamily="@font/sdgothicneo_bold"/>
+        </FrameLayout>
+
+
+        <TextView
+            android:id="@+id/descript_timecapsule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop = "10dp"
+            android:layout_gravity="center"
+            android:fontFamily="@font/sdgothicneo_regular"
+            android:text="설정한 시각이 되면 타임캡슐을 개봉할 수 있어요."
+            android:textColor="#ff4747"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation = "vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation = "vertical">
+
+                    <TextView
+                        android:id = "@+id/title_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text = "개봉 장소"
+                        android:fontFamily="@font/sdgothicneo_m"
+                        android:layout_marginTop = "20dp"
+                        android:textSize = "20sp"
+                        android:textColor="#000000"/>
+
+                    <com.google.android.gms.maps.MapView
+                        android:id = "@+id/Map"
+                        class = "com.google.android.gms.maps.SupportMapFragment"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation = "vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text = "개봉 날짜 및 시각"
+                        android:fontFamily="@font/sdgothicneo_m"
+                        android:layout_marginTop = "20dp"
+                        android:textSize = "20sp"
+                        android:textColor = "#000000"/>
+
+
+                    <TextView
+                        android:id = "@+id/setTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text = "0000-00-00 00:00"
+                        android:fontFamily="@font/sdgothicneo_m"
+                        android:layout_marginTop = "5dp"
+                        android:textSize = "20sp"
+                        android:textColor = "#000000"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation = "vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text = "함께 개봉하는 사람"
+                        android:fontFamily="@font/sdgothicneo_m"
+                        android:layout_marginTop = "20dp"
+                        android:textSize = "20sp"
+                        android:textColor = "#000000"/>
+
+
+                    <LinearLayout
+                        android:id = "@+id/friendsList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation = "vertical">
+
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

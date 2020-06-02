@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background = "#000000">
+
+    <LinearLayout
+        android:orientation = "horizontal"
+        android:layout_width = "fill_parent"
+        android:layout_height = "wrap_content"
+        android:layout_weight="0.07">
+
+        <TextView
+            android:id = "@+id/Title_ForgotPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity = "center"
+            android:text = "@string/title_forgot"
+            android:textSize = "30sp"
+            android:textColor = "#ffffff"
+            android:fontFamily = "@font/sdgothicneo_bold"
+            android:gravity = "center" />
+    </LinearLayout>
+
+    <TextView
+        android:id = "@+id/descript_resetpassword"
+        android:layout_width = "wrap_content"
+        android:layout_height = "wrap_content"
+        android:textColor = "#ffffff"
+        android:text = "@string/descript_reset"
+        android:gravity = "center_horizontal"
+        android:fontFamily = "@font/sdgothicneo_light"
+        android:textSize = "15sp"
+        android:layout_gravity = "center"/>
+
+    <EditText
+        android:id="@+id/resetpassword_email"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_weight = ".1"
+        android:layout_gravity = "center"
+        android:hint="@string/e_mail"
+        android:colorControlNormal = "#ffb338"
+        android:textColor = "#ffffff"
+        android:textColorHint = "#ffffff"
+        android:fontFamily = "@font/sdgothicneo_light"
+        android:inputType="textEmailAddress" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight = ".9">
+
+        <Button
+            android:id="@+id/resetpassword_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight=".9"
+            android:background="#00ff0000"
+            android:fontFamily="@font/sdgothicneo_light"
+            android:text="@string/cancel"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/resetpassword_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight = ".3"
+            android:fontFamily="@font/sdgothicneo_light"
+            android:text="@string/sendEmail"
+            android:textColor="#ffb338"
+            android:background = "#00ff0000"
+            android:textSize="15dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

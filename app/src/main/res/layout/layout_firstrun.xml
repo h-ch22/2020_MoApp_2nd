@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background = "#000000"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight = "0.7"
+        android:text = "@string/Welcome"
+        android:textColor = "#ffffff"
+        android:fontFamily="@font/sdgothicneo_sb"
+        android:textSize = "60sp"
+        android:gravity = "center"
+        android:layout_gravity = "center"/>
+
+    <Button
+        android:id = "@+id/btn_Start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight = "0.3"
+        android:layout_gravity = "center"
+        android:text = "@string/btn_startText"
+        android:background = "#00ff0000"
+        android:textColor = "#ffb338"
+        android:textSize = "20sp"
+        android:fontFamily="@font/sdgothicneo_light"/>
+
+</LinearLayout>

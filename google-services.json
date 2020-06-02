@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "667010464159",
+    "firebase_url": "https://moapp-2nd-project.firebaseio.com",
+    "project_id": "moapp-2nd-project",
+    "storage_bucket": "moapp-2nd-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667010464159:android:0468901e994e4ece0165aa",
+        "android_client_info": {
+          "package_name": "kr.ac.jbnu.se.MoApp2020_2nd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "667010464159-3rqh9mgnhtahd41p91a27h5am2pnfmn5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.ac.jbnu.se.MoApp2020_2nd",
+            "certificate_hash": "87dd8f83c150a971d0a4d2bb41cd88d2af93dd70"
+          }
+        },
+        {
+          "client_id": "667010464159-tu2pgcah922t5dtl1rmrg08q148kbjld.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0OczwLwbpIco6WSJV6v2gWEFDJpasub8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "667010464159-tu2pgcah922t5dtl1rmrg08q148kbjld.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
