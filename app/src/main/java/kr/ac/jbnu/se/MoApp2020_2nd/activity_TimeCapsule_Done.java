@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -58,7 +60,7 @@ import java.util.concurrent.TimeUnit;
 import io.opencensus.stats.Aggregation;
 import kr.ac.jbnu.se.MoApp2020_2nd.ui.TimeCapsule.TimeCapsuleFragment;
 
-public class activity_timeCapsule extends BaseActivity implements OnMapReadyCallback, interface_timeCapsule_googleMap {
+public class activity_TimeCapsule_Done extends BaseActivity implements OnMapReadyCallback, interface_timeCapsule_googleMap {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String timecapsule_name, openDate_full, open_date, open_time;
@@ -76,17 +78,25 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
 
     protected void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
-        setContentView(R.layout.fragment_timecapsule);
+        setContentView(R.layout.fragment_timecapsule_done);
         final TextView friend = new TextView(this);
 
-        TimeRemain = findViewById(R.id.TimeRemain);
-        DateRemain = findViewById(R.id.DateRemain);
+        Button open = findViewById(R.id.btn_openTimeCapsule);
         LinearLayout friendsList = findViewById(R.id.friendsList);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+//        mapFragment.getMapAsync(this);
 
         final TextView setTime = findViewById(R.id.setTime);
+
+        open.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_TimeCapsule_Done.this, activity_inTimeCapsule.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -126,29 +136,6 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
                     open_date = open_date_temp[0];
 
                     open_time = open_date_temp[1] + open_date_temp[2] + open_date_temp[3] + open_date_temp[4] + open_date_temp[5];
-
-                    setTime.setText(open_date + " " + open_time);
-
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH : mm : ss", Locale.KOREA);
-
-                    try {
-                        Date currentTime = new Date();
-                        String date = format.format(currentTime);
-                        long curMillis = currentTime.getTime();
-                        Log.d("current time : ", date);
-
-                        Date setDate = format.parse(openDate_full);
-                        long setMillis = setDate.getTime();
-
-                        long diff = setMillis - curMillis;
-
-                        Log.d("Difference : ", String.valueOf(diff));
-                        CounterClass timer = new CounterClass(diff, 1000);
-                        timer.start();
-
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
 
                 }
             }
@@ -247,7 +234,7 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 //Prompt the user once explanation has been shown
-                                ActivityCompat.requestPermissions(activity_timeCapsule.this,
+                                ActivityCompat.requestPermissions(activity_TimeCapsule_Done.this,
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                         MY_PERMISSIONS_REQUEST_LOCATION );
                             }
@@ -290,40 +277,6 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
                 }
                 return;
             }
-        }
-    }
-
-    public class CounterClass extends CountDownTimer {
-        public CounterClass(long millisInFuture, long countDownInterval) {
-            super(millisInFuture, countDownInterval);
-        }
-
-        @Override
-        public void onFinish() {
-            Intent intent = new Intent(activity_timeCapsule.this, activity_TimeCapsule_Done.class);
-            startActivity(intent);
-            finish();
-        }
-
-        @Override
-        public void onTick(long millisUntilFinished) {
-            long millis = millisUntilFinished;
-            Date date = new Date();
-            date.setTime(millis);
-
-            long days = TimeUnit.MILLISECONDS.toDays(millis);
-            millis -= TimeUnit.DAYS.toMillis(days);
-
-            long hours = TimeUnit.MILLISECONDS.toHours(millis);
-            millis -= TimeUnit.HOURS.toMillis(hours);
-
-            long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-            millis -= TimeUnit.MINUTES.toMillis(minutes);
-
-            long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-
-            DateRemain.setText(days + "일");
-            TimeRemain.setText(hours + " : " + minutes + " : " + seconds);
         }
     }
 

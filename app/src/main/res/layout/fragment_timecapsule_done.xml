@@ -34,27 +34,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/img_timecapsule_null"
+                android:src="@drawable/img_timecapsule_done"
                 app:layout_constraintStart_toStartOf="@+id/title_timecapsule"
                 app:layout_constraintTop_toTopOf="@+id/title_timecapsule" />
 
-            <TextView
-                android:id = "@+id/DateRemain"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text = "0일"
-                android:gravity = "center_horizontal"
-                android:paddingTop = "75dp"
-                android:textColor= "#ffffff"
-                android:textSize = "20sp"
-                android:fontFamily="@font/sdgothicneo_bold"/>
-
-            <TextView
+            <ImageView
                 android:id = "@+id/TimeRemain"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text = "0시 0분 0초"
                 android:gravity = "center_horizontal"
+                android:src = "@drawable/ic_check"
                 android:paddingTop = "95dp"
                 android:textColor= "#ffffff"
                 android:textSize = "30sp"
@@ -69,11 +58,27 @@
             android:layout_marginTop = "10dp"
             android:layout_gravity="center"
             android:fontFamily="@font/sdgothicneo_regular"
-            android:text="설정한 시각이 되면 타임캡슐을 개봉할 수 있어요."
-            android:textColor="#ff4747"
+            android:text="타임캡슐을 개봉할 준비가 완료되었습니다.\n개봉할 장소에서 친구와 함께 접속해주세요!"
+            android:textColor="#8C32a852"
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id = "@+id/btn_openTimeCapsule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text = "타임캡슐 개봉하기"
+            android:background = "@drawable/btn_rounded_shape"
+            android:drawableEnd="@drawable/ic_arrow_right"
+            android:paddingStart="30dp"
+            android:paddingEnd = "30dp"
+            android:drawablePadding="15dp"
+            android:textColor = "#ffffff"
+            android:textSize = "20sp"
+            android:fontFamily="@font/sdgothicneo_bold"
+            android:layout_gravity = "center"/>
 
         <ScrollView
             android:layout_width="wrap_content"
@@ -99,11 +104,11 @@
                         android:textSize = "20sp"
                         android:textColor="#000000"/>
 
-                    <fragment
-                        android:id = "@+id/map"
+                    <com.google.android.gms.maps.MapView
+                        android:id = "@+id/Map"
+                        class = "com.google.android.gms.maps.SupportMapFragment"
                         android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        class = "com.google.android.gms.maps.SupportMapFragment"/>
+                        android:layout_height="200dp"/>
 
                 </LinearLayout>
 

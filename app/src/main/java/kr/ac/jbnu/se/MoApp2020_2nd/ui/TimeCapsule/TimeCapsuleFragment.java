@@ -12,11 +12,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Objects;
 
 import kr.ac.jbnu.se.MoApp2020_2nd.R;
 import kr.ac.jbnu.se.MoApp2020_2nd.activity_createTimeCapsule;
@@ -28,18 +31,22 @@ public class TimeCapsuleFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private TimeCapsuleViewModel timeCapsuleViewModel;
     Button make;
+    View root;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         timeCapsuleViewModel = ViewModelProviders.of(this).get(TimeCapsuleViewModel.class);
 
-        DocumentReference docRef = db.collection("Users").document(mAuth.getCurrentUser().getDisplayName());
+        String name = mAuth.getCurrentUser().getDisplayName().toString();
+
+        DocumentReference docRef = db.collection("Users").document(name);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isSuccessful()){
                     DocumentSnapshot document = task.getResult();
 
-                    if(document.exists() && !document.getString("Time Capsule").equals("")){
+                    assert document != null;
+                    if(document.exists() && !Objects.equals(document.getString("Time Capsule"), "")){
                         timeCapsule_Name = document.getString("Time Capsule");
                         Intent intent = new Intent(getContext(), activity_timeCapsule.class);
                         startActivity(intent);
@@ -48,7 +55,7 @@ public class TimeCapsuleFragment extends Fragment {
             }
         });
 
-        View root = inflater.inflate(R.layout.fragment_timecapsule_first, container, false);
+        root = inflater.inflate(R.layout.fragment_timecapsule_first, container, false);
 
         make = root.findViewById(R.id.btn_makeTimeCapsule);
 

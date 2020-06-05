@@ -68,7 +68,8 @@ public class activity_createTimeCapsule extends BaseActivity {
     private ClipData mClipData;
     activity_map map = new activity_map();
     HashMap<String, String> enableTimeCapsule = new HashMap<String, String>();
-    public String location_full;
+    HashMap<String, String> location = new HashMap<String, String>();
+    public Double latitude, longitude;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +103,13 @@ public class activity_createTimeCapsule extends BaseActivity {
                     TextView loc = findViewById(R.id.showMarker);
 
                     loc.setText("선택한 위치 : " + map.latitude + ", " + map.longitude);
-                    location_full = map.latitude + ", " + map.longitude;
+                    latitude = map.latitude;
+                    longitude = map.longitude;
+
+                    String Str_latitude = Double.toString(latitude);
+                    String Str_longitude = Double.toString(longitude);
+
+                    location.put(Str_latitude, Str_longitude);
                 }
             }
         });
@@ -158,7 +165,7 @@ public class activity_createTimeCapsule extends BaseActivity {
                 timePicker = new TimePickerDialog(activity_createTimeCapsule.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        pick_time.setText(hourOfDay + " : " + minute);
+                        pick_time.setText(hourOfDay + " : " + minute + " : 00");
                     }
                 }, hour, minute, true);
 
@@ -181,7 +188,8 @@ public class activity_createTimeCapsule extends BaseActivity {
                     timeCapsule.put("Name", timecapsule_name.getText().toString());
                     timeCapsule.put("Friends", activity_addFriend.Checked);
                     timeCapsule.put("Create Date", formattedDate);
-                    timeCapsule.put("Open Locaton", location_full);
+                    timeCapsule.put("latitude", latitude);
+                    timeCapsule.put("longitude", longitude);
                     timeCapsule.put("Open Date", pick_date.getText().toString() + " " + pick_time.getText().toString());
                     enableTimeCapsule.put("Time Capsule", timecapsule_name.getText().toString());
 
