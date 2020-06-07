@@ -25,4 +25,6 @@
     <string name="cancel">취소</string>
     <string name="descript_reset">로그인에 문제가 있나요?\n아래 상자에 E-mail 주소를 입력해주세요.\nE-mail로 비밀번호 재설정 링크를 보내드립니다.</string>
     <string name="title_forgot">도움이 필요하신가요?</string>
+    <string name = "default_notification_channel_id">Channel ID</string>
+    <string name = "default_notification_channel_name" translatable="true">Test</string>
 </resources>

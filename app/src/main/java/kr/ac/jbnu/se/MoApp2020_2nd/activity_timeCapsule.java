@@ -1,16 +1,21 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.widget.CalendarView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,14 +31,11 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -52,6 +54,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -62,8 +65,10 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String timecapsule_name, openDate_full, open_date, open_time;
+    private FrameLayout frameLayout;
+    private ImageView img_Capsule;
     private String[] open_date_temp;
-    public TextView TimeRemain, DateRemain;
+    public TextView TimeRemain, DateRemain, descript, timeCapsule_name;
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
@@ -73,6 +78,9 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
     double latitude, longitude;
     private static ArrayList<String> friendList;
     long latitudeL, longitudeL;
+    ImageView check;
+    private Button open;
+    Context context = this;
 
     protected void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
@@ -81,7 +89,17 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
 
         TimeRemain = findViewById(R.id.TimeRemain);
         DateRemain = findViewById(R.id.DateRemain);
+        frameLayout = findViewById(R.id.frameLayout);
         LinearLayout friendsList = findViewById(R.id.friendsList);
+        img_Capsule = findViewById(R.id.img_status_timecapsule);
+        check = findViewById(R.id.img_status_check);
+        open = findViewById(R.id.btn_openTimeCapsule);
+        descript = findViewById(R.id.descript_timecapsule);
+        timeCapsule_name = findViewById(R.id.title_timecapsule);
+
+        timeCapsule_name.setText(TimeCapsuleFragment.timeCapsule_Name);
+
+        open.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -208,8 +226,8 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this)
-                .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
+                .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) context)
+                .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) context)
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
@@ -233,13 +251,9 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
                 new AlertDialog.Builder(this)
                         .setTitle("권한 상승 요구")
                         .setMessage("계속 하려면 위치 정보 액세스 권한이 필요합니다.")
@@ -300,9 +314,22 @@ public class activity_timeCapsule extends BaseActivity implements OnMapReadyCall
 
         @Override
         public void onFinish() {
-            Intent intent = new Intent(activity_timeCapsule.this, activity_TimeCapsule_Done.class);
-            startActivity(intent);
-            finish();
+            frameLayout.removeView(DateRemain);
+            frameLayout.removeView(TimeRemain);
+            img_Capsule.setImageResource(R.drawable.img_timecapsule_done);
+            check.setImageResource(R.drawable.ic_check);
+            descript.setText("타임캡슐을 개봉할 준비가 완료되었습니다.\n개봉할 장소에서 친구와 함께 접속해주세요!");
+            descript.setTextColor(Color.parseColor("#8C32a852"));
+            open.setVisibility(View.VISIBLE);
+
+            open.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(activity_timeCapsule.this, activity_inTimeCapsule.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
         }
 
         @Override

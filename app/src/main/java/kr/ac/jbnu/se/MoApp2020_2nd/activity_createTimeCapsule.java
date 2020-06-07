@@ -70,6 +70,7 @@ public class activity_createTimeCapsule extends BaseActivity {
     HashMap<String, String> enableTimeCapsule = new HashMap<String, String>();
     HashMap<String, String> location = new HashMap<String, String>();
     public Double latitude, longitude;
+    HashMap<String, String> fileName = new HashMap<String, String>();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -301,11 +302,28 @@ public class activity_createTimeCapsule extends BaseActivity {
         StorageReference storageRef = storage.getReference();
         StorageReference imgRef = storageRef.child("Time Capsule_" + timecapsule_name.getText().toString() + "/" + "Data" + i + ".jpg");
 
+        for(int j = 0; j <= i; j++){
+            fileName.put("File" + j, "Data" + j + ".jpg");
+        }
+
+        db.collection("Time Capsule").document(timecapsule_name.getText().toString())
+                .collection("Time Capsule Data List").document(timecapsule_name.getText().toString())
+                .set(fileName, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Upload : ", "Database Update Successful.");
+            }
+        });
+
         imgRef.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 toastMessage("데이터 업로드가 완료되었습니다.");
                 Log.d("Upload : ", "Successful.");
+
+                Intent intent = new Intent(activity_createTimeCapsule.this, activity_timeCapsule.class);
+                startActivity(intent);
+                finish();
             }
         })
 

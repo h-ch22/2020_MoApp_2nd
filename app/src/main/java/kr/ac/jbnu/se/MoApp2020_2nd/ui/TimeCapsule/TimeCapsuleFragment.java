@@ -46,7 +46,7 @@ public class TimeCapsuleFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
 
                     assert document != null;
-                    if(document.exists() && !Objects.equals(document.getString("Time Capsule"), "")){
+                    if(document.exists() && !Objects.equals(document.getString("Time Capsule"), null)){
                         timeCapsule_Name = document.getString("Time Capsule");
                         Intent intent = new Intent(getContext(), activity_timeCapsule.class);
                         startActivity(intent);

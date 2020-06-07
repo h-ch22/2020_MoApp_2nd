@@ -15,19 +15,6 @@
         android:textSize = "40sp"
         android:text = "타임캡슐 이름"/>
 
-    <Button
-        android:id="@+id/startAR"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:background="#ffffffff"
-        android:drawableStart="@drawable/ic_ar"
-        android:text="  AR로 보기"
-        android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
-
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
@@ -43,6 +30,23 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <Button
+        android:id="@+id/startAR"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_rounded_shape"
+        android:fontFamily="@font/sdgothicneo_m"
+        android:paddingStart = "20dp"
+        android:paddingEnd = "20dp"
+        android:drawableStart="@drawable/ic_ar"
+        android:drawableEnd="@drawable/ic_arrow_right"
+        android:text="  AR로 보기   "
+        android:textColor="#ffffff"
+        android:textSize="25sp" />
 
 
 </LinearLayout>
