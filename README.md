@@ -12,3 +12,7 @@
 2020 - 06 - 08
 - Change Log : Now you can use open-Time Capsule, Cloud Messaging Service
 - Fixed : Fixed to show Time Capsule open time when timer is end, Fixed to show and work Google Map when timer is end.
+
+2020 - 06 - 09
+- Change Log : Add Shot button on ARView, Changed Application Name to Official Name, Refactoring for Diary Class, Added Google Map in Memory Activity, Fixed to show picture when you select date from Calendar, Added to show your Previous Diary in Diary Activity.
+- Bugs : Shot button is not working

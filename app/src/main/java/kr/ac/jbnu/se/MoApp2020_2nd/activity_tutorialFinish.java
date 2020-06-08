@@ -12,6 +12,7 @@ public class activity_tutorialFinish extends Activity {
     protected void onCreate(Bundle savedInstancestate) {
         super.onCreate(savedInstancestate);
         setContentView(R.layout.layout_tutorial_finish);
+        start = findViewById(R.id.btn_Start);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override

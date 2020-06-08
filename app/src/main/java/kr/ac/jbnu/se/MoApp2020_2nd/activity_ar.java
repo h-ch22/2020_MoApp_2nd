@@ -1,13 +1,30 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
@@ -26,7 +43,10 @@ import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
+
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -46,15 +66,15 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     private static final String TAG = activity_ar.class.getSimpleName();
 
     private GLSurfaceView surfaceView;
-
+    private URI mImageUri;
     private boolean installRequested;
-
     private Session session;
     private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
     private DisplayRotationHelper displayRotationHelper;
     private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
     private TapHelper tapHelper;
-
+    private File external = Environment.getExternalStorageDirectory();
+    private File file = new File(external, "ARCapture.pjg");
     private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
     private final ObjectRenderer virtualObject = new ObjectRenderer();
     private final ObjectRenderer virtualObjectShadow = new ObjectRenderer();
@@ -65,6 +85,9 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
 
     private static final String SEARCHING_PLANE_MESSAGE = "Searching for surfaces...";
+
+    final int PERMISSONS_REQUEST_CODE = 1000;
+    String[] PERMISSONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private static class ColoredAnchor {
         public final Anchor anchor;
@@ -77,11 +100,18 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     }
 
     private final ArrayList<ColoredAnchor> anchors = new ArrayList<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_ar);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(!hasPermissions(PERMISSONS)){
+                requestPermissions(PERMISSONS, PERMISSONS_REQUEST_CODE);
+            }
+        }
+
+        Button shot = findViewById(R.id.btn_capture);
         surfaceView = findViewById(R.id.surfaceview);
         displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
@@ -96,6 +126,63 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         surfaceView.setWillNotDraw(false);
 
         installRequested = false;
+
+        shot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                capture();
+
+
+            }
+        });
+    }
+
+    private boolean hasPermissions(String[] permissions){
+        int result;
+
+        for(String perms : permissions){
+            result = ContextCompat.checkSelfPermission(this, perms);
+
+            if(result == PackageManager.PERMISSION_DENIED){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void capture(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+
+        try{
+            file = this.createTemp("picture", ".jpg");
+        }
+
+        catch(Exception e){
+            Log.d("Capture", String.valueOf(e));
+        }
+    }
+
+    private File createTemp(String part, String ext) throws Exception{
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        path += "/ARDir";
+        File tempDir = new File(path);
+
+
+        if(!tempDir.exists()){
+            tempDir.mkdirs();
+        }
+
+        try{
+            tempDir.createNewFile();
+        }
+
+        catch(IOException e){
+            Log.d("Capture", String.valueOf(e));
+        }
+
+        return File.createTempFile(part, ext, tempDir);
     }
 
     @Override
@@ -171,6 +258,18 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+
+        switch(requestCode){
+            case PERMISSONS_REQUEST_CODE:
+                if(results.length > 0){
+                    boolean diskPermissionsAccepted = results[1] == PackageManager.PERMISSION_GRANTED;
+
+                    if(!diskPermissionsAccepted){
+                        showDialogForPermission("계속 하려면 저장소 권한을 허용해주세요.");
+                    }
+                }
+        }
+
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
             Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
                     .show();
@@ -179,6 +278,30 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
             }
             finish();
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void showDialogForPermission(String msg){
+        AlertDialog.Builder build = new AlertDialog.Builder(activity_ar.this);
+        build.setTitle("권한 상승 요구");
+        build.setMessage(msg);
+        build.setCancelable(false);
+
+        build.setPositiveButton("예", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                requestPermissions(PERMISSONS, PERMISSONS_REQUEST_CODE);
+            }
+        });
+
+        build.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+
+        build.create().show();
     }
 
     @Override

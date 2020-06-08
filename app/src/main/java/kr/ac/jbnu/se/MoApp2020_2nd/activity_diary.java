@@ -1,16 +1,24 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
+import androidx.exifinterface.*;
+
+import android.graphics.Color;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,27 +37,46 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.exifinterface.media.ExifInterface;
 
 import com.bumptech.glide.Glide;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.ar.core.ImageMetadata;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class activity_diary extends BaseActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -61,50 +89,57 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     Map<String, Object> Title = new HashMap<String, Object>();
     Map<String, String> Contents = new HashMap<String, String>();
+    public static String selYear, selMonth, selDay;
+    private static String fullDate;
+    private static String year, month, day;
+    private ArrayList<String> storyList = new ArrayList<String>();
+    Context context = this;
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_diary);
 
+        Date currentDate = Calendar.getInstance().getTime();
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
+        SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
+
+        year = yearFormat.format(currentDate);
+        month = monthFormat.format(currentDate);
+        day = dayFormat.format(currentDate);
+
+        fullDate = year + "." + month + "." + day;
+
+        loadPreviousStory(fullDate);
         final SimpleDateFormat format = new SimpleDateFormat("MM/dd");
 
-        final TextView memory = findViewById(R.id.memory);
-        final CalendarView calendarView = findViewById(R.id.calendarView);
+        Button more = findViewById(R.id.moreMemory);
         editContents = findViewById(R.id.diary_contents);
         upload = findViewById(R.id.uploadbtn);
 
-        String defYear = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-        String defMonth = Integer.toString(Calendar.getInstance().get(Calendar.MONTH) + 1);
-        String defDay = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-
         file = findViewById(R.id.fileBtn);
 
-        memory.setText(defYear + "년 " + defMonth + "월 " + defDay + "일에 남긴 흔적들");
+        checkPermissions();
+
+        final CalendarView calendarView = findViewById(R.id.calendarView);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                String selYear = String.valueOf(year);
-                String selMonth = String.valueOf(month + 1);
-                String selDay = String.valueOf(dayOfMonth);
-
-                memory.setText(selYear + "년 " + selMonth + "월 " + selDay + "일에 남긴 흔적들");
+                selYear = String.valueOf(year);
+                selMonth = String.valueOf(month + 1);
+                selDay = String.valueOf(dayOfMonth);
+                loadPreviousStory(selYear + "." + selMonth + "." + selDay);
             }
         });
 
-        checkPermissions();
-
-        list = getImageFiles(Environment.getExternalStorageDirectory());
-
-        gridView = (GridView) findViewById(R.id.GalleryGrid);
-        gridView.setAdapter(new GridAdapter());
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        more.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                startActivity(new Intent(getApplicationContext(), activity_viewImage.class).putExtra("img", list.get(i).toString()));
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_diary.this, activity_memory.class);
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -133,6 +168,7 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
                     Contents.put("Date", Date);
                     Contents.put("Contents", contents);
                     Title.put(Date, Contents);
+
                     db.collection("Diary").document(currentUser.getDisplayName()).set(Title).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -171,76 +207,6 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
         }
     }
 
-    class GridAdapter extends BaseAdapter {
-
-        @Override
-        public int getCount() {
-            return list.size();
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return list.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            view = getLayoutInflater().inflate(R.layout.layout_gridimage, viewGroup, false);
-            ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
-
-            Glide.with(getApplicationContext())
-                    .load(getItem(i).toString())
-                    .into(imageView);
-            return view;
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    ArrayList<File> getImageFiles(File root) {
-        ArrayList<File> list = new ArrayList();
-        File[] files = root.listFiles();
-
-        for (int i = 0; i < files.length; i++) {
-            if(files[i].exists()){
-                ExifInterface exif = null;
-
-                try{
-                    exif = new ExifInterface(files[i]);
-
-                    if(exif != null){
-                        String dateString = exif.getAttribute(ExifInterface.TAG_DATETIME);
-                        Date currentDate = Calendar.getInstance().getTime();
-                        SimpleDateFormat df = new SimpleDateFormat("yyyy-mm-dd");
-                        String date = df.format(currentDate);
-
-                        if(dateString.equals(date) && files[i].getName().endsWith(".jpg") || files[i].getName().endsWith(".png") || files[i].getName().endsWith(".gif")){
-                            list.add(files[i]);
-                        }
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-//            if(files[i].isDirectory()) {
-//
-//            }
-//
-//            else {
-//                if(files[i].getName().endsWith(".jpg") || files[i].getName().endsWith(".png") || files[i].getName().endsWith(".gif")) {
-//                    list.add(files[i]);
-//                }
-//            }
-        }
-        return  list;
-    }
-
     private void checkPermissions(){
         if (Build.VERSION.SDK_INT >= 23) {
             if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -257,6 +223,7 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
                 }
+
                 return;
             }
         }
@@ -267,6 +234,43 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         activityManager.getMemoryInfo(memoryInfo);
         return memoryInfo;
+    }
+
+    private void loadPreviousStory(String date) {
+        DocumentReference docRef = db.collection("Diary").document(mAuth.getCurrentUser().getDisplayName());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    Map<String, Object> storyMap = task.getResult().getData();
+
+                    for(Map.Entry<String, Object> entry : storyMap.entrySet()){
+                        if(entry.getKey().equals(date)){
+                            storyList.add(entry.getValue().toString());
+                            Log.d("Story", entry.getValue().toString());
+
+                            final LinearLayout contentsLL = findViewById(R.id.contentsLayout);
+                            for (int i = 0; i < storyList.size(); i++) {
+                                LinearLayout childLL = new LinearLayout(context);
+                                contentsLL.removeAllViews();
+                                childLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1));
+                                childLL.setOrientation(LinearLayout.VERTICAL);
+
+                                TextView[] contents = new TextView[storyList.size()];
+                                contents[i] = new TextView(context);
+                                contents[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                contents[i].setTextColor(Color.parseColor("#000000"));
+                                contents[i].setTextSize(20);
+                                contents[i].setText(storyList.get(i));
+
+                                childLL.addView(contents[i]);
+                                contentsLL.addView(childLL);
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void toastMessage(String message){

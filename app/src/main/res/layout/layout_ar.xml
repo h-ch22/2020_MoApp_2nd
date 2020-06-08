@@ -11,4 +11,14 @@
         android:layout_height="fill_parent"
         android:layout_gravity="top"/>
 
+    <Button
+        android:id = "@+id/btn_capture"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:background="@drawable/btn_capture_background"
+        android:drawableStart="@drawable/ic_camera_black"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:paddingStart = "20dp"/>
+
 </RelativeLayout>

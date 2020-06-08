@@ -1,13 +1,9 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
 import android.content.Intent;
-import android.text.TextUtils;
-
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-
 import java.util.HashMap;
 import java.util.Map;
 
