@@ -93,6 +93,9 @@ public class activity_signin extends BaseActivity {
                     public void onSuccess(LoginResult loginResult) {
                         Log.d("Sign-in with Facebook", "Sign-in with Facebook was completed.");
                         toastMessage("Facebook 로그인 완료");
+                        Intent intent = new Intent(activity_signin.this, dialog_register.class);
+                        startActivity(intent);
+                        finish();
                     }
 
                     @Override
@@ -188,7 +191,7 @@ public class activity_signin extends BaseActivity {
                 firebaseAuthWithGoogle(account);
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
-                Log.w("Sign-in with Google", "Google sign in failed", e);
+                Log.w("Sign-in with Google", "Google sign in failed" + e);
                 toastMessage("Google 로그인이 완료되지 않았습니다.");
             }
         }
@@ -227,7 +230,9 @@ public class activity_signin extends BaseActivity {
     private void updateUI(FirebaseUser user) {
 //        hideProgressDialog();
         if (user != null) {
-
+            Intent intent = new Intent(activity_signin.this, dialog_register.class);
+            startActivity(intent);
+            finish();
         }
     }
 

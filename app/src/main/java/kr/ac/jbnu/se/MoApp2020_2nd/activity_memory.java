@@ -14,8 +14,10 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.CalendarView;
+import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -73,6 +75,7 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
     long latitudeL, longitudeL;
     Context context = this;
     int cnt = 0;
+    private boolean zoomOut = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -177,6 +180,8 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
             markerOptions.snippet(Str_latitude + ", " + Str_longitude);
 
             markerOptions.position(new LatLng(latitude, longitude));
+
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 14.0f));
 
             googleMap.addMarker(markerOptions);
         }
@@ -325,7 +330,7 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
             }
 
             Date exif;
-            SimpleDateFormat format = new SimpleDateFormat("yyyy/M/d");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
             String captureDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
             String[] partDate = captureDate.split(":");
             String newDate = partDate[0] + "/" + partDate[1] + "/" + partDate[2] + ":" + partDate[3] + ":" + partDate[4];

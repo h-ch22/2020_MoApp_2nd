@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/menuHabitTracker"
-        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.HabitTracker.HabitTrackerFragment"
-        android:label="Habit Tracker"
-        tools:layout="@layout/fragment_habittracker" />
+        android:id="@+id/menuARCamera"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.AR_Camera.ARCameraFragment"
+        android:label="AR Camera"
+        tools:layout="@layout/fragment_ar_start" />
 
     <fragment
         android:id="@+id/menuTimeCapsule"

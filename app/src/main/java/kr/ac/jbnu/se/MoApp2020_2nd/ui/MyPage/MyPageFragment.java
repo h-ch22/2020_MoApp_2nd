@@ -25,10 +25,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import kr.ac.jbnu.se.MoApp2020_2nd.AddFriend;
-import kr.ac.jbnu.se.MoApp2020_2nd.Editprofile;
-import kr.ac.jbnu.se.MoApp2020_2nd.Follower;
-import kr.ac.jbnu.se.MoApp2020_2nd.Following;
+import kr.ac.jbnu.se.MoApp2020_2nd.activity_addFriend;
+import kr.ac.jbnu.se.MoApp2020_2nd.activity_EditProfile;
+import kr.ac.jbnu.se.MoApp2020_2nd.activity_Follower;
+import kr.ac.jbnu.se.MoApp2020_2nd.activity_Following;
 import kr.ac.jbnu.se.MoApp2020_2nd.R;
 
 public class MyPageFragment extends Fragment {
@@ -132,7 +132,7 @@ public class MyPageFragment extends Fragment {
         follower.setOnClickListener( new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), Follower.class);
+                Intent intent = new Intent(getActivity(), activity_Follower.class);
                 startActivity(intent);
             }
         });
@@ -140,7 +140,7 @@ public class MyPageFragment extends Fragment {
         following.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), Following.class);
+                Intent intent = new Intent(getActivity(), activity_Following.class);
                 startActivity(intent);
             }
         });
@@ -148,7 +148,7 @@ public class MyPageFragment extends Fragment {
         editprofile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), Editprofile.class);
+                Intent intent = new Intent(getActivity(), activity_EditProfile.class);
                 startActivity(intent);
             }
         });
@@ -156,7 +156,7 @@ public class MyPageFragment extends Fragment {
         addfriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), AddFriend.class);
+                Intent intent = new Intent(getActivity(), activity_addFriend.class);
                 startActivity(intent);
             }
         });

@@ -3,20 +3,15 @@ package kr.ac.jbnu.se.MoApp2020_2nd;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,7 +22,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,11 +32,6 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -115,7 +104,7 @@ public class activity_createTimeCapsule extends BaseActivity {
             }
         });
 
-        for(String s : activity_addFriend.Checked){
+        for(String s : dialog_addFriend.Checked){
             if(!s.equals("")){
                 LinearLayout friendList = findViewById(R.id.addedPeopleLayout);
 
@@ -129,7 +118,7 @@ public class activity_createTimeCapsule extends BaseActivity {
             @Override
             public void onClick(View v) {
                 saveData();
-                Intent intent = new Intent(activity_createTimeCapsule.this, activity_addFriend.class);
+                Intent intent = new Intent(activity_createTimeCapsule.this, dialog_addFriend.class);
                 startActivity(intent);
                 finish();
             }
@@ -187,7 +176,7 @@ public class activity_createTimeCapsule extends BaseActivity {
                     String formattedDate = df.format(current);
 
                     timeCapsule.put("Name", timecapsule_name.getText().toString());
-                    timeCapsule.put("Friends", activity_addFriend.Checked);
+                    timeCapsule.put("Friends", dialog_addFriend.Checked);
                     timeCapsule.put("Create Date", formattedDate);
                     timeCapsule.put("latitude", latitude);
                     timeCapsule.put("longitude", longitude);
@@ -206,7 +195,7 @@ public class activity_createTimeCapsule extends BaseActivity {
                         }
                     });
 
-                    for(String s : activity_addFriend.Checked){
+                    for(String s : dialog_addFriend.Checked){
                         if(!s.equals("")){
                             db.collection("Users").document(s).set(enableTimeCapsule, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override

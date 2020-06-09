@@ -1,32 +1,21 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import androidx.exifinterface.*;
-
 import android.graphics.Color;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
-import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,49 +23,34 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.exifinterface.media.ExifInterface;
-
-import com.bumptech.glide.Glide;
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.Tag;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.ar.core.ImageMetadata;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class activity_diary extends BaseActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -96,6 +70,10 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
     Context context = this;
     private LinearLayout childLL;
     LinearLayout contentsLL;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    String name = mAuth.getCurrentUser().getDisplayName();
+    InputStream stream = null;
+    private static BufferedReader buf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,15 +108,23 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                if(childLL.getParent() != null){
-                    childLL.removeAllViews();
+                if(!storyList.isEmpty()){
+                    storyList.clear();
                 }
 
-                contentsLL.removeAllViews();
-                storyList.clear();
+                childLL.removeAllViewsInLayout();
+                contentsLL.removeAllViewsInLayout();
                 selYear = String.valueOf(year);
                 selMonth = String.valueOf(month + 1);
+                if(selMonth.length() == 1){
+                    selMonth = "0" + selMonth;
+                }
+
                 selDay = String.valueOf(dayOfMonth);
+                if(selDay.length() == 1){
+                    selDay = "0" + selDay;
+                }
+
                 loadPreviousStory(selYear + "." + selMonth + "." + selDay);
             }
         });
@@ -172,25 +158,23 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
 
                     FirebaseUser currentUser = mAuth.getInstance().getCurrentUser();
                     Calendar calendar = Calendar.getInstance();
-                    DateFormat format = new SimpleDateFormat("YYYY-MM-dd, HH:mm");
+                    DateFormat format = new SimpleDateFormat("YYYY.MM.dd, HH:mm");
                     String Date = format.format(Calendar.getInstance().getTime());
-                    Contents.put("Date", Date);
-                    Contents.put("Contents", contents);
-                    Title.put(Date, Contents);
+                    Contents.put(Date, contents);
 
-                    db.collection("Diary").document(currentUser.getDisplayName()).set(Title).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    db.collection("Diary").document(currentUser.getDisplayName()).set(Contents, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            hideProgressDialog();
                             toastMessage("컨텐츠가 성공적으로 저장되었습니다.");
+                            hideProgressDialog();
                         }
                     })
 
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-                                    hideProgressDialog();
                                     toastMessage("컨텐츠가 저장되지 않았습니다. 나중에 다시시도하세요.");
+                                    hideProgressDialog();
                                 }
                             });
                 }
@@ -200,12 +184,10 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        InputStream stream = null;
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != intent) {
             try {
                 stream = this.getApplicationContext().getContentResolver().openInputStream(intent.getData());
                 Bitmap original = BitmapFactory.decodeStream(stream);
-
                 ImageView imageView = new ImageView(this);
                 imageView.setImageBitmap(original);
                 LinearLayout linearLayout = findViewById(R.id.homeLL);
@@ -219,7 +201,6 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
     private void checkPermissions(){
         if (Build.VERSION.SDK_INT >= 23) {
             if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                //Requesting permission.
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
         }
@@ -254,22 +235,25 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
                     Map<String, Object> storyMap = task.getResult().getData();
 
                     for(Map.Entry<String, Object> entry : storyMap.entrySet()){
-                        if(entry.getKey().equals(date)){
-                            storyList.add(entry.getValue().toString());
+                        String[] splitKey = entry.getKey().split(",");
+
+                        if(splitKey[0].equals(date)) {
+                            String date = splitKey[1];
+                            storyList.add((String) storyMap.get(entry.getKey()));
                             Log.d("Story", entry.getValue().toString());
 
                             for (int i = 0; i < storyList.size(); i++) {
                                 childLL = new LinearLayout(context);
-                                contentsLL.removeAllViews();
                                 childLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1));
                                 childLL.setOrientation(LinearLayout.VERTICAL);
 
                                 TextView[] contents = new TextView[storyList.size()];
                                 contents[i] = new TextView(context);
-                                contents[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                contents[i].setBackgroundResource(R.drawable.btn_rounded);
+                                contents[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                                 contents[i].setTextColor(Color.parseColor("#000000"));
                                 contents[i].setTextSize(20);
-                                contents[i].setText(storyList.get(i));
+                                contents[i].setText(date + " : " + storyList.get(i));
 
                                 childLL.addView(contents[i]);
                                 contentsLL.addView(childLL);

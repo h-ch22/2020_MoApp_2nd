@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-public class Following extends AppCompatActivity {
+public class activity_Following extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,504 +1,662 @@
 package kr.ac.jbnu.se.MoApp2020_2nd;
 
-import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
 
-import com.google.ar.core.Anchor;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Camera;
+import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
-import com.google.ar.core.HitResult;
-import com.google.ar.core.Plane;
-import com.google.ar.core.Point;
-import com.google.ar.core.PointCloud;
 import com.google.ar.core.Session;
-import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
+import kr.ac.jbnu.se.MoApp2020_2nd.rendering.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import javax.vecmath.Vector2f;
+import javax.vecmath.Vector3f;
 
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.CameraPermissionHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.DisplayRotationHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.FullScreenHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.SnackbarHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.TapHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.helpers.TrackingStateHelper;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.rendering.BackgroundRenderer;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.rendering.ObjectRenderer;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.rendering.PlaneRenderer;
-import kr.ac.jbnu.se.MoApp2020_2nd.common.rendering.PointCloudRenderer;
+public class activity_ar extends AppCompatActivity implements GLSurfaceView.Renderer, GestureDetector.OnGestureListener,
+        GestureDetector.OnDoubleTapListener {
 
-public class activity_ar extends AppCompatActivity implements GLSurfaceView.Renderer {
-    private static final String TAG = activity_ar.class.getSimpleName();
+        private static final String TAG = activity_ar.class.getSimpleName();
 
-    private GLSurfaceView surfaceView;
-    private URI mImageUri;
-    private boolean installRequested;
-    private Session session;
-    private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
-    private DisplayRotationHelper displayRotationHelper;
-    private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
-    private TapHelper tapHelper;
-    private File external = Environment.getExternalStorageDirectory();
-    private File file = new File(external, "ARCapture.pjg");
-    private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
-    private final ObjectRenderer virtualObject = new ObjectRenderer();
-    private final ObjectRenderer virtualObjectShadow = new ObjectRenderer();
-    private final PlaneRenderer planeRenderer = new PlaneRenderer();
-    private final PointCloudRenderer pointCloudRenderer = new PointCloudRenderer();
-    private Button capture;
+        private GLSurfaceView mSurfaceView;
+        private Config mDefaultConfig;
+        private Session mSession;
+        private BackgroundRenderer mBackgroundRenderer = new BackgroundRenderer();
+        private LineShaderRenderer mLineShaderRenderer = new LineShaderRenderer();
+        private Frame mFrame;
 
-    private final float[] anchorMatrix = new float[16];
-    private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
+        private int mWidth, mHeight;
+        private boolean capturePicture = false;
+        private float[] projmtx = new float[16];
+        private float[] viewmtx = new float[16];
+        private float[] mZeroMatrix = new float[16];
 
-    private static final String SEARCHING_PLANE_MESSAGE = "표면을 찾는 중...";
+        private boolean mPaused = false;
 
-    final int PERMISSONS_REQUEST_CODE = 1000;
-    String[] PERMISSONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private int mWidth, mHeight;
-    private boolean capturePicture = false;
+        private float mScreenWidth = 0;
+        private float mScreenHeight = 0;
 
-    private static class ColoredAnchor {
-        public final Anchor anchor;
-        public final float[] color;
+        private BiquadFilter biquadFilter;
+        private Vector3f mLastPoint;
+        private AtomicReference<Vector2f> lastTouch = new AtomicReference<>();
 
-        public ColoredAnchor(Anchor a, float[] color4f) {
-            this.anchor = a;
-            this.color = color4f;
-        }
-    }
+        private GestureDetectorCompat mDetector;
 
-    private final ArrayList<ColoredAnchor> anchors = new ArrayList<>();
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_ar);
+        private LinearLayout mSettingsUI;
+        private LinearLayout mButtonBar;
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if(!hasPermissions(PERMISSONS)){
-                requestPermissions(PERMISSONS, PERMISSONS_REQUEST_CODE);
-            }
-        }
+        private SeekBar mLineWidthBar;
+        private SeekBar mLineDistanceScaleBar;
+        private SeekBar mSmoothingBar;
 
-        capture = findViewById(R.id.btn_capture);
-        surfaceView = findViewById(R.id.surfaceview);
-        displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
-        tapHelper = new TapHelper(/*context=*/ this);
-        surfaceView.setOnTouchListener(tapHelper);
+        private float mLineWidthMax = 0.33f;
+        private float mDistanceScale = 0.0f;
+        private float mLineSmoothing = 0.1f;
 
-        surfaceView.setPreserveEGLContextOnPause(true);
-        surfaceView.setEGLContextClientVersion(2);
-        surfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0); // Alpha used for plane blending.
-        surfaceView.setRenderer(this);
-        surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-        surfaceView.setWillNotDraw(false);
+        private float[] mLastFramePosition;
 
-        installRequested = false;
-    }
+        private AtomicBoolean bIsTracking = new AtomicBoolean(true);
+        private AtomicBoolean bReCenterView = new AtomicBoolean(false);
+        private AtomicBoolean bTouchDown = new AtomicBoolean(false);
+        private AtomicBoolean bClearDrawing = new AtomicBoolean(false);
+        private AtomicBoolean bLineParameters = new AtomicBoolean(false);
+        private AtomicBoolean bUndo = new AtomicBoolean(false);
+        private AtomicBoolean bNewStroke = new AtomicBoolean(false);
 
-    private boolean hasPermissions(String[] permissions){
-        int result;
+        private ArrayList<ArrayList<Vector3f>> mStrokes;
 
-        for(String perms : permissions){
-            result = ContextCompat.checkSelfPermission(this, perms);
+        private DisplayRotationHelper mDisplayRotationHelper;
+        private Snackbar mMessageSnackbar;
 
-            if(result == PackageManager.PERMISSION_DENIED){
-                return false;
-            }
-        }
+        private boolean bInstallRequested;
 
-        return true;
-    }
+        private TrackingState mState;
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            final SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
-        if (session == null) {
-            Exception exception = null;
-            String message = null;
-            try {
-                switch (ArCoreApk.getInstance().requestInstall(this, !installRequested)) {
-                    case INSTALL_REQUESTED:
-                        installRequested = true;
-                        return;
-                    case INSTALLED:
-                        break;
+            setContentView(R.layout.layout_ar);
+
+            mSurfaceView = findViewById(R.id.surfaceview);
+            mSettingsUI = findViewById(R.id.strokeUI);
+            mButtonBar = findViewById(R.id.button_bar);
+
+            mLineDistanceScaleBar = findViewById(R.id.distanceScale);
+            mLineWidthBar = findViewById(R.id.lineWidth);
+            mSmoothingBar = findViewById(R.id.smoothingSeekBar);
+
+            mLineDistanceScaleBar.setProgress(sharedPref.getInt("mLineDistanceScale", 1));
+            mLineWidthBar.setProgress(sharedPref.getInt("mLineWidth", 10));
+            mSmoothingBar.setProgress(sharedPref.getInt("mSmoothing", 50));
+
+            mDistanceScale = LineUtils.map((float) mLineDistanceScaleBar.getProgress(), 0, 100, 1, 200, true);
+            mLineWidthMax = LineUtils.map((float) mLineWidthBar.getProgress(), 0f, 100f, 0.1f, 5f, true);
+            mLineSmoothing = LineUtils.map((float) mSmoothingBar.getProgress(), 0, 100, 0.01f, 0.2f, true);
+
+            SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    SharedPreferences.Editor editor = sharedPref.edit();
+
+                    if (seekBar == mLineDistanceScaleBar) {
+                        editor.putInt("mLineDistanceScale", progress);
+                        mDistanceScale = LineUtils.map((float) progress, 0f, 100f, 1f, 200f, true);
+                    } else if (seekBar == mLineWidthBar) {
+                        editor.putInt("mLineWidth", progress);
+                        mLineWidthMax = LineUtils.map((float) progress, 0f, 100f, 0.1f, 5f, true);
+                    } else if (seekBar == mSmoothingBar) {
+                        editor.putInt("mSmoothing", progress);
+                        mLineSmoothing = LineUtils.map((float) progress, 0, 100, 0.01f, 0.2f, true);
+                    }
+                    mLineShaderRenderer.bNeedsUpdate.set(true);
+
+                    editor.apply();
+
                 }
 
-                if (!CameraPermissionHelper.hasCameraPermission(this)) {
-                    CameraPermissionHelper.requestCameraPermission(this);
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+            };
+
+            mLineDistanceScaleBar.setOnSeekBarChangeListener(seekBarChangeListener);
+            mLineWidthBar.setOnSeekBarChangeListener(seekBarChangeListener);
+            mSmoothingBar.setOnSeekBarChangeListener(seekBarChangeListener);
+
+            mSettingsUI.setVisibility(View.GONE);
+
+            mDisplayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
+            Matrix.setIdentityM(mZeroMatrix, 0);
+
+            mLastPoint = new Vector3f(0, 0, 0);
+
+            bInstallRequested = false;
+
+            mSurfaceView.setPreserveEGLContextOnPause(true);
+            mSurfaceView.setEGLContextClientVersion(2);
+            mSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+            mSurfaceView.setRenderer(this);
+            mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+            mDetector = new GestureDetectorCompat(this, this);
+            mDetector.setOnDoubleTapListener(this);
+            mStrokes = new ArrayList<>();
+
+
+        }
+
+        private void addStroke(Vector2f touchPoint) {
+            Vector3f newPoint = LineUtils.GetWorldCoords(touchPoint, mScreenWidth, mScreenHeight, projmtx, viewmtx);
+            addStroke(newPoint);
+        }
+
+        private void addPoint(Vector2f touchPoint) {
+            Vector3f newPoint = LineUtils.GetWorldCoords(touchPoint, mScreenWidth, mScreenHeight, projmtx, viewmtx);
+            addPoint(newPoint);
+        }
+
+        private void addStroke(Vector3f newPoint) {
+            biquadFilter = new BiquadFilter(mLineSmoothing);
+            for (int i = 0; i < 1500; i++) {
+                biquadFilter.update(newPoint);
+            }
+            Vector3f p = biquadFilter.update(newPoint);
+            mLastPoint = new Vector3f(p);
+            mStrokes.add(new ArrayList<Vector3f>());
+            mStrokes.get(mStrokes.size() - 1).add(mLastPoint);
+        }
+
+        private void addPoint(Vector3f newPoint) {
+            if (LineUtils.distanceCheck(newPoint, mLastPoint)) {
+                Vector3f p = biquadFilter.update(newPoint);
+                mLastPoint = new Vector3f(p);
+                mStrokes.get(mStrokes.size() - 1).add(mLastPoint);
+            }
+        }
+
+        @Override
+        protected void onResume() {
+            super.onResume();
+
+            if (mSession == null) {
+                Exception exception = null;
+                String message = null;
+                try {
+                    switch (ArCoreApk.getInstance().requestInstall(this, !bInstallRequested)) {
+                        case INSTALL_REQUESTED:
+                            bInstallRequested = true;
+                            return;
+                        case INSTALLED:
+                            break;
+                    }
+
+                    if (!PermissionHelper.hasCameraPermission(this)) {
+                        PermissionHelper.requestCameraPermission(this);
+                        return;
+                    }
+
+                    if(!PermissionHelper.hasStoragePermission(this)){
+                        PermissionHelper.requestStoragePermission(this);
+                        return;
+                    }
+
+                    mSession = new Session(/* context= */ this);
+                } catch (UnavailableArcoreNotInstalledException
+                        | UnavailableUserDeclinedInstallationException e) {
+                    message = "ARCore 애플리케이션 설치 후 다시 시도해주세요.";
+                    exception = e;
+                } catch (UnavailableApkTooOldException e) {
+                    message = "계속 하려면 ARCore 애플리케이션을 업데이트해주세요.";
+                    exception = e;
+                } catch (UnavailableSdkTooOldException e) {
+                    message = "계속 하려면 이 소프트웨어를 업데이트해주세요.";
+                    exception = e;
+                } catch (Exception e) {
+                    message = "이 디바이스는 AR을 지원하지 않습니다.";
+                    exception = e;
+                }
+
+                if (message != null) {
+                    Log.e(TAG, "Exception creating session", exception);
                     return;
                 }
 
-                session = new Session(/* context= */ this);
-
-            } catch (UnavailableArcoreNotInstalledException
-                    | UnavailableUserDeclinedInstallationException e) {
-                message = "ARCore 애플리케이션을 설치해주세요.";
-                exception = e;
-            } catch (UnavailableApkTooOldException e) {
-                message = "ARCore 애플리케이션을 업데이트해주세요.";
-                exception = e;
-            } catch (UnavailableSdkTooOldException e) {
-                message = "이 애플리케이션은 업데이트가 필요합니다.";
-                exception = e;
-            } catch (UnavailableDeviceNotCompatibleException e) {
-                message = "이 디바이스는 AR을 지원하지 않습니다.";
-                exception = e;
-            } catch (Exception e) {
-                message = "AR 세션 생성 중 문제가 발생하였습니다.\n다시 시도하거나, 문제가 지속될 경우 관리자에게 문의하십시오.";
-                exception = e;
-            }
-
-            if (message != null) {
-                messageSnackbarHelper.showError(this, message);
-                Log.e(TAG, "Exception creating session", exception);
-                return;
-            }
-        }
-
-        try {
-            session.resume();
-        } catch (CameraNotAvailableException e) {
-            messageSnackbarHelper.showError(this, "카메라를 사용할 수 없습니다.\n카메라 권한이 허용되었는지 확인한 후 애플리케이션을 재시작해주세요.");
-            session = null;
-            return;
-        }
-
-        surfaceView.onResume();
-        displayRotationHelper.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (session != null) {
-            displayRotationHelper.onPause();
-            surfaceView.onPause();
-            session.pause();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
-        super.onRequestPermissionsResult(requestCode, permissions, results);
-
-        switch(requestCode){
-            case PERMISSONS_REQUEST_CODE:
-                if(results.length > 0){
-                    boolean diskPermissionsAccepted = results[1] == PackageManager.PERMISSION_GRANTED;
-
-                    if(!diskPermissionsAccepted){
-                        showDialogForPermission("계속 하려면 저장소 권한을 허용해주세요.");
-                    }
+                Config config = new Config(mSession);
+                if (!mSession.isSupported(config)) {
+                    Log.e(TAG, "Exception creating session Device Does Not Support ARCore", exception);
                 }
+                mSession.configure(config);
+            }
+
+            try {
+                mSession.resume();
+            } catch (CameraNotAvailableException e) {
+                e.printStackTrace();
+            }
+            mSurfaceView.onResume();
+            mDisplayRotationHelper.onResume();
+            mPaused = false;
         }
 
-        if (!CameraPermissionHelper.hasCameraPermission(this)) {
-            Toast.makeText(this, "계속 하려면 카메라 권한을 허용해주세요.", Toast.LENGTH_LONG)
-                    .show();
-            if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
-                CameraPermissionHelper.launchPermissionSettings(this);
+        @Override
+        public void onPause() {
+            super.onPause();
+
+            if (mSession != null) {
+                mDisplayRotationHelper.onPause();
+                mSurfaceView.onPause();
+                mSession.pause();
             }
-            finish();
+
+            mPaused = false;
+
+
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            mScreenHeight = displayMetrics.heightPixels;
+            mScreenWidth = displayMetrics.widthPixels;
         }
-    }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void showDialogForPermission(String msg){
-        AlertDialog.Builder build = new AlertDialog.Builder(activity_ar.this);
-        build.setTitle("권한 상승 요구");
-        build.setMessage(msg);
-        build.setCancelable(false);
 
-        build.setPositiveButton("예", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                requestPermissions(PERMISSONS, PERMISSONS_REQUEST_CODE);
-            }
-        });
-
-        build.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+        @Override
+        public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+            if (!PermissionHelper.hasCameraPermission(this)) {
+                Toast.makeText(this,
+                        "계속 하려면 카메라 권한이 필요합니다.", Toast.LENGTH_LONG).show();
                 finish();
             }
-        });
 
-        build.create().show();
-    }
+            if(!PermissionHelper.hasStoragePermission(this)){
+                Toast.makeText(this, "계속 하려면 저장소 권한이 필요합니다.", Toast.LENGTH_LONG).show();
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus);
-    }
-
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-        try {
-            backgroundRenderer.createOnGlThread(this);
-            planeRenderer.createOnGlThread(this, "models/trigrid.png");
-            pointCloudRenderer.createOnGlThread(this);
-
-            virtualObject.createOnGlThread(this, "models/andy.obj", "models/andy.png");
-            virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
-
-            virtualObjectShadow.createOnGlThread(
-                this, "models/andy_shadow.obj", "models/andy_shadow.png");
-            virtualObjectShadow.setBlendMode(ObjectRenderer.BlendMode.Shadow);
-            virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
-
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to read an asset file", e);
-        }
-    }
-
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        displayRotationHelper.onSurfaceChanged(width, height);
-        GLES20.glViewport(0, 0, width, height);
-        mWidth = width;
-        mHeight = height;
-    }
-
-    public void onSavePicture(View view) {
-        this.capturePicture = true;
-    }
-
-    public void SavePicture() throws IOException{
-        int pixelData[] = new int[mWidth * mHeight];
-
-        IntBuffer buf = IntBuffer.wrap(pixelData);
-        buf.position(0);
-        GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
-
-        final File output = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES) + "/AR", "Img" + Long.toHexString(
-                        System.currentTimeMillis()) + ".png");
-
-        Log.d("AR Save Photo", Environment.DIRECTORY_PICTURES);
-
-        if(!output.getParentFile().exists()){
-            output.getParentFile().mkdirs();
-        }
-
-        int bitmapData[] = new int[pixelData.length];
-
-        for(int i = 0; i < mHeight; i++){
-            for(int j = 0; j < mWidth; j++){
-                int p = pixelData[i * mWidth + j];
-                int b = (p & 0x00ff0000) >> 16;
-                int r = (p & 0x000000ff) << 16;
-                int ga = p & 0xff00ff00;
-
-                bitmapData[(mHeight - i - 1) * mWidth + j] = ga | r | b;
+                finish();
             }
         }
 
-        Bitmap bmp = Bitmap.createBitmap(bitmapData, mWidth, mHeight, Bitmap.Config.ARGB_8888);
-
-        FileOutputStream fos = new FileOutputStream(output);
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        fos.flush();
-        fos.close();
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        // Clear screen to notify driver it should not load any pixels from previous frame.
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-        if (session == null) {
-            return;
+        @Override
+        public void onWindowFocusChanged(boolean hasFocus) {
+            super.onWindowFocusChanged(hasFocus);
+            if (hasFocus) {
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
         }
 
-        // Notify ARCore session that the view size changed so that the perspective matrix and
-        // the video background can be properly adjusted.
-        displayRotationHelper.updateSessionIfNeeded(session);
+        @Override
+        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
-        try {
-            session.setCameraTextureName(backgroundRenderer.getTextureId());
-
-            // Obtain the current frame from ARSession. When the configuration is set to
-            // UpdateMode.BLOCKING (it is by default), this will throttle the rendering to the
-            // camera framerate.
-            Frame frame = session.update();
-            Camera camera = frame.getCamera();
-
-            // Handle one tap per frame.
-            handleTap(frame, camera);
-
-            // If frame is ready, render camera preview image to the GL surface.
-            backgroundRenderer.draw(frame);
-
-            // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
-            trackingStateHelper.updateKeepScreenOnFlag(camera.getTrackingState());
-
-            // If not tracking, don't draw 3D objects, show tracking failure reason instead.
-            if (camera.getTrackingState() == TrackingState.PAUSED) {
-                messageSnackbarHelper.showMessage(
-                        this, TrackingStateHelper.getTrackingFailureReasonString(camera));
+            if (mSession == null) {
                 return;
             }
 
-            // Get projection matrix.
-            float[] projmtx = new float[16];
-            camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
+            GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            mBackgroundRenderer.createOnGlThread(/*context=*/this);
 
-            // Get camera matrix and draw.
-            float[] viewmtx = new float[16];
-            camera.getViewMatrix(viewmtx, 0);
-
-            // Compute lighting from average intensity of the image.
-            // The first three components are color scaling factors.
-            // The last one is the average pixel intensity in gamma space.
-            final float[] colorCorrectionRgba = new float[4];
-            frame.getLightEstimate().getColorCorrection(colorCorrectionRgba, 0);
-
-            // Visualize tracked points.
-            // Use try-with-resources to automatically release the point cloud.
-            try (PointCloud pointCloud = frame.acquirePointCloud()) {
-                pointCloudRenderer.update(pointCloud);
-                pointCloudRenderer.draw(viewmtx, projmtx);
-            }
-
-            // No tracking error at this point. If we detected any plane, then hide the
-            // message UI, otherwise show searchingPlane message.
-            if (hasTrackingPlane()) {
-                messageSnackbarHelper.hide(this);
-            } else {
-                messageSnackbarHelper.showMessage(this, SEARCHING_PLANE_MESSAGE);
-            }
-
-            // Visualize planes.
-            planeRenderer.drawPlanes(
-                    session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
-
-            // Visualize anchors created by touch.
-            float scaleFactor = 1.0f;
-            for (ColoredAnchor coloredAnchor : anchors) {
-                if (coloredAnchor.anchor.getTrackingState() != TrackingState.TRACKING) {
-                    continue;
-                }
-                // Get the current pose of an Anchor in world space. The Anchor pose is updated
-                // during calls to session.update() as ARCore refines its estimate of the world.
-                coloredAnchor.anchor.getPose().toMatrix(anchorMatrix, 0);
-
-                // Update and draw the model and its shadow.
-                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
-                virtualObjectShadow.updateModelMatrix(anchorMatrix, scaleFactor);
-                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba, coloredAnchor.color);
-                virtualObjectShadow.draw(viewmtx, projmtx, colorCorrectionRgba, coloredAnchor.color);
-            }
-
-        } catch (Throwable t) {
-            // Avoid crashing the application due to unhandled exceptions.
-            Log.e(TAG, "Exception on the OpenGL thread", t);
-        }
-
-        if(capturePicture){
-            capturePicture = false;
             try {
-                SavePicture();
-            } catch (IOException e) {
+
+                mSession.setCameraTextureName(mBackgroundRenderer.getTextureId());
+                mLineShaderRenderer.createOnGlThread(this);
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    }
 
-    // Handle only one tap per frame, as taps are usually low frequency compared to frame rate.
-    private void handleTap(Frame frame, Camera camera) {
-        MotionEvent tap = tapHelper.poll();
-        if (tap != null && camera.getTrackingState() == TrackingState.TRACKING) {
-            for (HitResult hit : frame.hitTest(tap)) {
-                // Check if any plane was hit, and if it was hit inside the plane polygon
-                Trackable trackable = hit.getTrackable();
-                // Creates an anchor if a plane or an oriented point was hit.
-                if ((trackable instanceof Plane
-                        && ((Plane) trackable).isPoseInPolygon(hit.getHitPose())
-                        && (PlaneRenderer.calculateDistanceToPlane(hit.getHitPose(), camera.getPose()) > 0))
-                        || (trackable instanceof Point
-                        && ((Point) trackable).getOrientationMode()
-                        == Point.OrientationMode.ESTIMATED_SURFACE_NORMAL)) {
-                    // Hits are sorted by depth. Consider only closest hit on a plane or oriented point.
-                    // Cap the number of objects created. This avoids overloading both the
-                    // rendering system and ARCore.
-                    if (anchors.size() >= 20) {
-                        anchors.get(0).anchor.detach();
-                        anchors.remove(0);
+
+        @Override
+        public void onSurfaceChanged(GL10 gl, int width, int height) {
+            GLES20.glViewport(0, 0, width, height);
+            mDisplayRotationHelper.onSurfaceChanged(width, height);
+            mScreenWidth = width;
+            mScreenHeight = height;
+            mWidth = width;
+            mHeight = height;
+        }
+
+        private void update() {
+
+            if (mSession == null) {
+                return;
+            }
+
+            mDisplayRotationHelper.updateSessionIfNeeded(mSession);
+
+            try {
+
+                mSession.setCameraTextureName(mBackgroundRenderer.getTextureId());
+
+                mFrame = mSession.update();
+                Camera camera = mFrame.getCamera();
+
+                mState = camera.getTrackingState();
+
+                if (mState == TrackingState.TRACKING && !bIsTracking.get()) {
+                    bIsTracking.set(true);
+                } else if (mState== TrackingState.STOPPED && bIsTracking.get()) {
+                    bIsTracking.set(false);
+                    bTouchDown.set(false);
+                }
+                camera.getProjectionMatrix(projmtx, 0, dialog_ARSettings.getNearClip(), dialog_ARSettings.getFarClip());
+                camera.getViewMatrix(viewmtx, 0);
+
+                float[] position = new float[3];
+                camera.getPose().getTranslation(position, 0);
+
+                if (mLastFramePosition != null) {
+                    Vector3f distance = new Vector3f(position[0], position[1], position[2]);
+                    distance.sub(new Vector3f(mLastFramePosition[0], mLastFramePosition[1], mLastFramePosition[2]));
+
+                    if (distance.length() > 0.15) {
+                        bTouchDown.set(false);
                     }
+                }
+                mLastFramePosition = position;
 
-                    // Assign a color to the object for rendering based on the trackable type
-                    // this anchor attached to. For AR_TRACKABLE_POINT, it's blue color, and
-                    // for AR_TRACKABLE_PLANE, it's green color.
-                    float[] objColor;
-                    if (trackable instanceof Point) {
-                        objColor = new float[] {66.0f, 133.0f, 244.0f, 255.0f};
-                    } else if (trackable instanceof Plane) {
-                        objColor = new float[] {139.0f, 195.0f, 74.0f, 255.0f};
-                    } else {
-                        objColor = DEFAULT_COLOR;
+                Matrix.multiplyMM(viewmtx, 0, viewmtx, 0, mZeroMatrix, 0);
+
+
+                if (bNewStroke.get()) {
+                    bNewStroke.set(false);
+                    addStroke(lastTouch.get());
+                    mLineShaderRenderer.bNeedsUpdate.set(true);
+                } else if (bTouchDown.get()) {
+                    addPoint(lastTouch.get());
+                    mLineShaderRenderer.bNeedsUpdate.set(true);
+                }
+
+                if (bReCenterView.get()) {
+                    bReCenterView.set(false);
+                    mZeroMatrix = getCalibrationMatrix();
+                }
+
+                if (bClearDrawing.get()) {
+                    bClearDrawing.set(false);
+                    clearDrawing();
+                    mLineShaderRenderer.bNeedsUpdate.set(true);
+                }
+
+                if (bUndo.get()) {
+                    bUndo.set(false);
+                    if (mStrokes.size() > 0) {
+                        mStrokes.remove(mStrokes.size() - 1);
+                        mLineShaderRenderer.bNeedsUpdate.set(true);
                     }
+                }
+                mLineShaderRenderer.setDrawDebug(bLineParameters.get());
+                if (mLineShaderRenderer.bNeedsUpdate.get()) {
+                    mLineShaderRenderer.setColor(dialog_ARSettings.getColor());
+                    mLineShaderRenderer.mDrawDistance = dialog_ARSettings.getStrokeDrawDistance();
+                    mLineShaderRenderer.setDistanceScale(mDistanceScale);
+                    mLineShaderRenderer.setLineWidth(mLineWidthMax);
+                    mLineShaderRenderer.clear();
+                    mLineShaderRenderer.updateStrokes(mStrokes);
+                    mLineShaderRenderer.upload();
+                }
 
-                    // Adding an Anchor tells ARCore that it should track this position in
-                    // space. This anchor is created on the Plane to place the 3D model
-                    // in the correct position relative both to the world and to the plane.
-                    anchors.add(new ColoredAnchor(hit.createAnchor(), objColor));
-                    break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onDrawFrame(GL10 gl) {
+            if (mPaused) return;
+
+            update();
+
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+            if (mFrame == null) {
+                return;
+            }
+
+            mBackgroundRenderer.draw(mFrame);
+
+            if (mFrame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+                mLineShaderRenderer.draw(viewmtx, projmtx, mScreenWidth, mScreenHeight, dialog_ARSettings.getNearClip(), dialog_ARSettings.getFarClip());
+            }
+
+            if(capturePicture){
+                capturePicture = false;
+                try {
+                    SavePicture();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
-    }
 
-    private boolean hasTrackingPlane() {
-        for (Plane plane : session.getAllTrackables(Plane.class)) {
-            if (plane.getTrackingState() == TrackingState.TRACKING) {
-                return true;
+        public void onSavePicture(View view){
+            this.capturePicture = true;
+        }
+
+        public void SavePicture() throws IOException{
+            int pixelData[] = new int[mWidth * mHeight];
+
+            IntBuffer buf = IntBuffer.wrap(pixelData);
+            buf.position(0);
+            GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+
+            final File output = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES) + "/Memory For You", "img" + Long.toHexString(System.currentTimeMillis()) + ".png");
+
+            if(!output.getParentFile().exists()){
+                output.getParentFile().mkdirs();
+            }
+
+            int bitmapData[] = new int[pixelData.length];
+
+            for(int i = 0; i < mHeight; i++){
+                for(int j = 0; j < mWidth; j++){
+                    int p = pixelData[i * mWidth + j];
+                    int b = (p & 0x00ff0000) >> 16;
+                    int r = (p & 0x000000ff) << 16;
+                    int ga = p & 0xff00ff00;
+
+                    bitmapData[(mHeight - i - 1) * mWidth + j] = ga | r | b;
+                }
+            }
+
+            Bitmap bmp = Bitmap.createBitmap(bitmapData, mWidth, mHeight, Bitmap.Config.ARGB_8888);
+
+            FileOutputStream fos = new FileOutputStream(output);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+        }
+
+        public float[] getCalibrationMatrix() {
+            float[] t = new float[3];
+            float[] m = new float[16];
+
+            mFrame.getCamera().getPose().getTranslation(t, 0);
+            float[] z = mFrame.getCamera().getPose().getZAxis();
+            Vector3f zAxis = new Vector3f(z[0], z[1], z[2]);
+            zAxis.y = 0;
+            zAxis.normalize();
+
+            double rotate = Math.atan2(zAxis.x, zAxis.z);
+
+            Matrix.setIdentityM(m, 0);
+            Matrix.translateM(m, 0, t[0], t[1], t[2]);
+            Matrix.rotateM(m, 0, (float) Math.toDegrees(rotate), 0, 1, 0);
+            return m;
+        }
+
+        public void clearDrawing() {
+            mStrokes.clear();
+            mLineShaderRenderer.clear();
+        }
+
+        public void onClickUndo(View button) {
+            bUndo.set(true);
+        }
+
+        public void onClickLineDebug(View button) {
+            bLineParameters.set(!bLineParameters.get());
+        }
+
+        public void onClickSettings(View button) {
+            ImageButton settingsButton = findViewById(R.id.settingsButton);
+
+            if (mSettingsUI.getVisibility() == View.GONE) {
+                mSettingsUI.setVisibility(View.VISIBLE);
+                mLineDistanceScaleBar = findViewById(R.id.distanceScale);
+                mLineWidthBar = findViewById(R.id.lineWidth);
+
+                settingsButton.setColorFilter(getResources().getColor(R.color.active));
+            } else {
+                mSettingsUI.setVisibility(View.GONE);
+                settingsButton.setColorFilter(getResources().getColor(R.color.gray));
             }
         }
-        return false;
-    }
 
-}
+        public void onClickClear(View button) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setMessage("모두 지우시겠습니까?");
+
+            builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    bClearDrawing.set(true);
+                }
+            });
+            builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
+        }
+
+        public void onClickRecenter(View button) {
+            bReCenterView.set(true);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent tap) {
+            this.mDetector.onTouchEvent(tap);
+
+            if (tap.getAction() == MotionEvent.ACTION_DOWN ) {
+                lastTouch.set(new Vector2f(tap.getX(), tap.getY()));
+                bTouchDown.set(true);
+                bNewStroke.set(true);
+                return true;
+            } else if (tap.getAction() == MotionEvent.ACTION_MOVE || tap.getAction() == MotionEvent.ACTION_POINTER_DOWN) {
+                lastTouch.set(new Vector2f(tap.getX(), tap.getY()));
+                bTouchDown.set(true);
+                return true;
+            } else if (tap.getAction() == MotionEvent.ACTION_UP || tap.getAction() == MotionEvent.ACTION_CANCEL) {
+                bTouchDown.set(false);
+                lastTouch.set(new Vector2f(tap.getX(), tap.getY()));
+                return true;
+            }
+
+            return super.onTouchEvent(tap);
+        }
+
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            if (mButtonBar.getVisibility() == View.GONE) {
+                mButtonBar.setVisibility(View.VISIBLE);
+            } else {
+                mButtonBar.setVisibility(View.GONE);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent tap) {
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
+
+    }

@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,7 +24,6 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -49,10 +47,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import kr.ac.jbnu.se.MoApp2020_2nd.ui.Home.HomeFragment;
-import kr.ac.jbnu.se.MoApp2020_2nd.ui.MyPage.MyPageFragment;
 
-public class Editprofile extends AppCompatActivity {
+public class activity_EditProfile extends AppCompatActivity {
     private static final String TAG ="EDITPROFILETag";
     private Button profilebtn, savebtn, backbtn, logout, delete;
     private ImageButton birthbtn;
@@ -159,10 +155,10 @@ public class Editprofile extends AppCompatActivity {
                                 }
                             });
 
-                    Toast.makeText(Editprofile.this, "저장되었습니다", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_EditProfile.this, "저장되었습니다", Toast.LENGTH_SHORT).show();
                 }
                 else
-                    Toast.makeText(Editprofile.this, "필드를 채워주세요", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_EditProfile.this, "필드를 채워주세요", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -170,7 +166,7 @@ public class Editprofile extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mAuth.signOut();
-                Intent intent = new Intent(Editprofile.this, activity_tutorial.class);
+                Intent intent = new Intent(activity_EditProfile.this, activity_tutorial.class);
                 finish();
                 startActivity(intent);
             }
@@ -179,7 +175,7 @@ public class Editprofile extends AppCompatActivity {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder alert_confirm = new AlertDialog.Builder(Editprofile.this);
+                AlertDialog.Builder alert_confirm = new AlertDialog.Builder(activity_EditProfile.this);
                 alert_confirm.setMessage("정말 계정을 삭제 할까요?").setCancelable(false).setPositiveButton("확인", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -188,7 +184,7 @@ public class Editprofile extends AppCompatActivity {
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
-                                                Toast.makeText(Editprofile.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(activity_EditProfile.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
                                                 finish();
                                                 startActivity(new Intent(getApplicationContext(), activity_tutorial.class));
                                             }
@@ -199,7 +195,7 @@ public class Editprofile extends AppCompatActivity {
                 alert_confirm.setNegativeButton("취소", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Toast.makeText(Editprofile.this, "취소", Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity_EditProfile.this, "취소", Toast.LENGTH_LONG).show();
                     }
                 });
                 alert_confirm.show();
@@ -209,7 +205,7 @@ public class Editprofile extends AppCompatActivity {
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Editprofile.this, activity_main.class);
+                Intent intent = new Intent(activity_EditProfile.this, activity_main.class);
                 finish();
                 startActivity(intent);
             }
@@ -218,7 +214,7 @@ public class Editprofile extends AppCompatActivity {
         birthbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DatePickerDialog(Editprofile.this, mDatePicker, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH),
+                new DatePickerDialog(activity_EditProfile.this, mDatePicker, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH),
                         mCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
@@ -264,13 +260,13 @@ public class Editprofile extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     progressDialog.dismiss();
-                    Toast.makeText(Editprofile.this, "Image Uploaded!!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_EditProfile.this, "Image Uploaded!!", Toast.LENGTH_SHORT).show();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     progressDialog.dismiss();
-                    Toast.makeText(Editprofile.this, "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_EditProfile.this, "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                 // Progress Listener for loading
@@ -289,10 +285,10 @@ public class Editprofile extends AppCompatActivity {
                 @Override public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
                     if(i == R.id.edit_manbtn){
                         gender = "남성";
-                        Toast.makeText(Editprofile.this, "남성", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity_EditProfile.this, "남성", Toast.LENGTH_SHORT).show();
                     } else if(i == R.id.edit_womanbtn){
                         gender = "여성";
-                        Toast.makeText(Editprofile.this, "여성", Toast.LENGTH_SHORT).show(); }
+                        Toast.makeText(activity_EditProfile.this, "여성", Toast.LENGTH_SHORT).show(); }
                 }
             };
 

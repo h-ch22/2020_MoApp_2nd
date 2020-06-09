@@ -1,13 +1,13 @@
-package kr.ac.jbnu.se.MoApp2020_2nd.ui.HabitTracker;
+package kr.ac.jbnu.se.MoApp2020_2nd.ui.AR_Camera;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class HabitTrackerViewModel extends ViewModel {
+public class ARCameraViewModel extends ViewModel {
     private MutableLiveData<String> mText;
 
-    public HabitTrackerViewModel(){
+    public ARCameraViewModel(){
 
     }
 

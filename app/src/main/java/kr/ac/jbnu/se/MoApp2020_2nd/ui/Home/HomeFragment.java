@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment {
 
         mAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = mAuth.getCurrentUser();
-        Displayname =user.getDisplayName();
+        Displayname = user.getDisplayName();
         DocumentReference docRefuser = db.collection("Users").document(Displayname);
         docRefuser.collection("Friend").document("Following").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

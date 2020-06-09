@@ -19,7 +19,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-public class Follower extends AppCompatActivity {
+public class activity_Follower extends AppCompatActivity {
     private static final String TAG ="Friend";
 
     private Button addFriend;

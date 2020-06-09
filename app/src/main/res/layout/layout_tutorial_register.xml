@@ -68,8 +68,9 @@
             android:layout_weight = "0.01"
             android:layout_gravity="center"
             android:hint = "@string/birth"
-            android:inputType="textEmailAddress"
             android:textColorHint="#ffffff"
+            android:editable = "false"
+            android:focusable="false"
             android:fontFamily="@font/sdgothicneo_light"
             android:colorControlNormal = "#ffb338"
             android:textColor = "#ffffff"/>
