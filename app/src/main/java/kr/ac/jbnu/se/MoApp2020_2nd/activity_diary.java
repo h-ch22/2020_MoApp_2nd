@@ -94,6 +94,8 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
     private static String year, month, day;
     private ArrayList<String> storyList = new ArrayList<String>();
     Context context = this;
+    private LinearLayout childLL;
+    LinearLayout contentsLL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +106,7 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
         SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
         SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
         SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
+        contentsLL = findViewById(R.id.contentsLayout);
 
         year = yearFormat.format(currentDate);
         month = monthFormat.format(currentDate);
@@ -127,6 +130,12 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                if(childLL.getParent() != null){
+                    childLL.removeAllViews();
+                }
+
+                contentsLL.removeAllViews();
+                storyList.clear();
                 selYear = String.valueOf(year);
                 selMonth = String.valueOf(month + 1);
                 selDay = String.valueOf(dayOfMonth);
@@ -249,9 +258,8 @@ public class activity_diary extends BaseActivity implements ActivityCompat.OnReq
                             storyList.add(entry.getValue().toString());
                             Log.d("Story", entry.getValue().toString());
 
-                            final LinearLayout contentsLL = findViewById(R.id.contentsLayout);
                             for (int i = 0; i < storyList.size(); i++) {
-                                LinearLayout childLL = new LinearLayout(context);
+                                childLL = new LinearLayout(context);
                                 contentsLL.removeAllViews();
                                 childLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1));
                                 childLL.setOrientation(LinearLayout.VERTICAL);

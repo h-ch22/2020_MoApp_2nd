@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#ffffff"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/linearLayout6"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Habit Tracker"
+            android:textSize="30sp"
+            android:fontFamily="@font/sdgothicneo_bold"
+            android:textColor="#000000"
+            android:gravity="center"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/previousDay"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#ffffffff"
+                android:fontFamily="@font/sdgothicneo_m"
+                android:text="←" />
+
+            <TextView
+                android:id = "@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0000. 00. 00"
+                android:textSize="20sp"
+                android:fontFamily="@font/sdgothicneo_bold"
+                android:textColor="#000000"
+                android:gravity="center"/>
+
+            <Button
+                android:id="@+id/nextDay"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#ffffffff"
+                android:fontFamily="@font/sdgothicneo_m"
+                android:text="→" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id = "@+id/titleHabit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "00월 00일, 목표를 실현하셨나요?"
+            android:layout_gravity="center"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            android:fontFamily="@font/sdgothicneo_m"
+            android:layout_marginTop = "20dp"/>
+
+        <LinearLayout
+            android:id = "@+id/contentsLL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+
+        </LinearLayout>
+
+        <Button
+            android:id = "@+id/Btn_NewHabit"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text = "새로운 목표 설정하기"
+            android:textColor="#ffffff"
+            android:fontFamily="@font/sdgothicneo_m"
+            android:drawableEnd="@drawable/ic_arrow_right"
+            android:layout_marginTop = "20dp"
+            android:paddingEnd="20dp"
+            android:paddingStart="20dp"
+            android:background="@drawable/btn_rounded_shape"
+            android:layout_gravity="center"/>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

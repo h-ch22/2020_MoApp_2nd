@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -45,8 +46,10 @@ import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -80,14 +83,17 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     private final ObjectRenderer virtualObjectShadow = new ObjectRenderer();
     private final PlaneRenderer planeRenderer = new PlaneRenderer();
     private final PointCloudRenderer pointCloudRenderer = new PointCloudRenderer();
+    private Button capture;
 
     private final float[] anchorMatrix = new float[16];
     private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
 
-    private static final String SEARCHING_PLANE_MESSAGE = "Searching for surfaces...";
+    private static final String SEARCHING_PLANE_MESSAGE = "표면을 찾는 중...";
 
     final int PERMISSONS_REQUEST_CODE = 1000;
     String[] PERMISSONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private int mWidth, mHeight;
+    private boolean capturePicture = false;
 
     private static class ColoredAnchor {
         public final Anchor anchor;
@@ -111,7 +117,7 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
             }
         }
 
-        Button shot = findViewById(R.id.btn_capture);
+        capture = findViewById(R.id.btn_capture);
         surfaceView = findViewById(R.id.surfaceview);
         displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
@@ -126,15 +132,6 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         surfaceView.setWillNotDraw(false);
 
         installRequested = false;
-
-        shot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                capture();
-
-
-            }
-        });
     }
 
     private boolean hasPermissions(String[] permissions){
@@ -149,40 +146,6 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         }
 
         return true;
-    }
-
-    private void capture(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
-
-        try{
-            file = this.createTemp("picture", ".jpg");
-        }
-
-        catch(Exception e){
-            Log.d("Capture", String.valueOf(e));
-        }
-    }
-
-    private File createTemp(String part, String ext) throws Exception{
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        path += "/ARDir";
-        File tempDir = new File(path);
-
-
-        if(!tempDir.exists()){
-            tempDir.mkdirs();
-        }
-
-        try{
-            tempDir.createNewFile();
-        }
-
-        catch(IOException e){
-            Log.d("Capture", String.valueOf(e));
-        }
-
-        return File.createTempFile(part, ext, tempDir);
     }
 
     @Override
@@ -210,19 +173,19 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
 
             } catch (UnavailableArcoreNotInstalledException
                     | UnavailableUserDeclinedInstallationException e) {
-                message = "Please install ARCore";
+                message = "ARCore 애플리케이션을 설치해주세요.";
                 exception = e;
             } catch (UnavailableApkTooOldException e) {
-                message = "Please update ARCore";
+                message = "ARCore 애플리케이션을 업데이트해주세요.";
                 exception = e;
             } catch (UnavailableSdkTooOldException e) {
-                message = "Please update this app";
+                message = "이 애플리케이션은 업데이트가 필요합니다.";
                 exception = e;
             } catch (UnavailableDeviceNotCompatibleException e) {
-                message = "This device does not support AR";
+                message = "이 디바이스는 AR을 지원하지 않습니다.";
                 exception = e;
             } catch (Exception e) {
-                message = "Failed to create AR session";
+                message = "AR 세션 생성 중 문제가 발생하였습니다.\n다시 시도하거나, 문제가 지속될 경우 관리자에게 문의하십시오.";
                 exception = e;
             }
 
@@ -236,7 +199,7 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         try {
             session.resume();
         } catch (CameraNotAvailableException e) {
-            messageSnackbarHelper.showError(this, "Camera not available. Try restarting the app.");
+            messageSnackbarHelper.showError(this, "카메라를 사용할 수 없습니다.\n카메라 권한이 허용되었는지 확인한 후 애플리케이션을 재시작해주세요.");
             session = null;
             return;
         }
@@ -271,7 +234,7 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         }
 
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
-            Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
+            Toast.makeText(this, "계속 하려면 카메라 권한을 허용해주세요.", Toast.LENGTH_LONG)
                     .show();
             if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
                 CameraPermissionHelper.launchPermissionSettings(this);
@@ -336,6 +299,50 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         displayRotationHelper.onSurfaceChanged(width, height);
         GLES20.glViewport(0, 0, width, height);
+        mWidth = width;
+        mHeight = height;
+    }
+
+    public void onSavePicture(View view) {
+        this.capturePicture = true;
+    }
+
+    public void SavePicture() throws IOException{
+        int pixelData[] = new int[mWidth * mHeight];
+
+        IntBuffer buf = IntBuffer.wrap(pixelData);
+        buf.position(0);
+        GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buf);
+
+        final File output = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + "/AR", "Img" + Long.toHexString(
+                        System.currentTimeMillis()) + ".png");
+
+        Log.d("AR Save Photo", Environment.DIRECTORY_PICTURES);
+
+        if(!output.getParentFile().exists()){
+            output.getParentFile().mkdirs();
+        }
+
+        int bitmapData[] = new int[pixelData.length];
+
+        for(int i = 0; i < mHeight; i++){
+            for(int j = 0; j < mWidth; j++){
+                int p = pixelData[i * mWidth + j];
+                int b = (p & 0x00ff0000) >> 16;
+                int r = (p & 0x000000ff) << 16;
+                int ga = p & 0xff00ff00;
+
+                bitmapData[(mHeight - i - 1) * mWidth + j] = ga | r | b;
+            }
+        }
+
+        Bitmap bmp = Bitmap.createBitmap(bitmapData, mWidth, mHeight, Bitmap.Config.ARGB_8888);
+
+        FileOutputStream fos = new FileOutputStream(output);
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        fos.flush();
+        fos.close();
     }
 
     @Override
@@ -346,6 +353,7 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         if (session == null) {
             return;
         }
+
         // Notify ARCore session that the view size changed so that the perspective matrix and
         // the video background can be properly adjusted.
         displayRotationHelper.updateSessionIfNeeded(session);
@@ -428,6 +436,15 @@ public class activity_ar extends AppCompatActivity implements GLSurfaceView.Rend
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
             Log.e(TAG, "Exception on the OpenGL thread", t);
+        }
+
+        if(capturePicture){
+            capturePicture = false;
+            try {
+                SavePicture();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

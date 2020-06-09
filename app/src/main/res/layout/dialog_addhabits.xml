@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="300dp"
+    android:layout_height="600dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text = "새로운 목표 설정하기"
+        android:textColor = "#000000"
+        android:fontFamily="@font/sdgothicneo_bold"
+        android:gravity = "center"
+        android:textSize = "30sp"/>
+
+    <EditText
+        android:id = "@+id/edit_habit"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop = "20dp"
+        android:layout_gravity="center"
+        android:hint = "목표 설정하기"
+        android:textColorHint="#000000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop = "20dp"
+        android:orientation = "horizontal">
+
+        <Button
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/cancelBtn"
+            android:background="#ffffffff"
+            android:text="취소"
+            android:textColor="@color/colorAccent"
+            android:textSize="15sp" />
+
+        <Button
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/okBtn"
+            android:background="#ffffffff"
+            android:text="확인"
+            android:textColor="@color/colorAccent"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

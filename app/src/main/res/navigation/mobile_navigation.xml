@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/menuFriends"
-        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.Friends.FriendsFragment"
-        android:label="Diary"
-        tools:layout="@layout/fragment_friends" />
+        android:id="@+id/menuHabitTracker"
+        android:name="kr.ac.jbnu.se.MoApp2020_2nd.ui.HabitTracker.HabitTrackerFragment"
+        android:label="Habit Tracker"
+        tools:layout="@layout/fragment_habittracker" />
 
     <fragment
         android:id="@+id/menuTimeCapsule"

@@ -8,9 +8,9 @@
         android:title = "Home"/>
 
     <item
-        android:id = "@+id/menuFriends"
-        android:icon = "@drawable/friends_selector"
-        android:title = "Friends"/>
+        android:id = "@+id/menuHabitTracker"
+        android:icon = "@drawable/habittracker_selector"
+        android:title = "Habit Tracker"/>
 
     <item
         android:id = "@+id/menuTimeCapsule"

@@ -83,7 +83,6 @@
             android:theme="@style/Theme_Tutorial" />
         <activity android:name=".activity_diary" />
         <activity android:name=".activity_main" />
-        <activity android:name=".activity_viewImage" />
         <activity android:name=".activity_createTimeCapsule" />
         <activity
             android:name=".activity_addFriend"
@@ -97,6 +96,9 @@
         <activity android:name=".activity_inTimeCapsule" />
         <activity android:name=".activity_arStart" />
         <activity android:name=".activity_memory"/>
+        <activity
+            android:name=".activity_addHabit"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
 
         <meta-data
             android:name="com.google.ar.core"

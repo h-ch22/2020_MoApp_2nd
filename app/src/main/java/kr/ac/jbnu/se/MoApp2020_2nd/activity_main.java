@@ -8,14 +8,14 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import kr.ac.jbnu.se.MoApp2020_2nd.ui.Friends.FriendsFragment;
+import kr.ac.jbnu.se.MoApp2020_2nd.ui.HabitTracker.HabitTrackerFragment;
 import kr.ac.jbnu.se.MoApp2020_2nd.ui.MyPage.MyPageFragment;
 import kr.ac.jbnu.se.MoApp2020_2nd.ui.Home.HomeFragment;
 import kr.ac.jbnu.se.MoApp2020_2nd.ui.TimeCapsule.TimeCapsuleFragment;
 
 public class activity_main extends AppCompatActivity {
     private FragmentManager fragmentManager = getSupportFragmentManager();
-    private FriendsFragment fragmentDiary = new FriendsFragment();
+    private HabitTrackerFragment fragmentDiary = new HabitTrackerFragment();
     private MyPageFragment fragmentFriends = new MyPageFragment();
     private HomeFragment fragmentHome = new HomeFragment();
     private TimeCapsuleFragment fragmentTimeCapsule = new TimeCapsuleFragment();
@@ -27,7 +27,7 @@ public class activity_main extends AppCompatActivity {
 
         BottomNavigationView navView = findViewById(R.id.navigationView);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.menuHome, R.id.menuFriends, R.id.menuMyPage, R.id.menuTimeCapsule)
+                R.id.menuHome, R.id.menuHabitTracker, R.id.menuMyPage, R.id.menuTimeCapsule)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(navView, navController);

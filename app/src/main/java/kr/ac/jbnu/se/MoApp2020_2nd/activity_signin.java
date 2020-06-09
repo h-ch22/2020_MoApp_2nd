@@ -23,6 +23,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -131,14 +132,15 @@ public class activity_signin extends BaseActivity {
                                     startActivity(intent);
                                     finish();
                                 }
-
-                                else{
-                                    hideProgressDialog();
-                                    Toast.makeText(activity_signin.this, "로그인을 완료하지 못했습니다.\n이메일과 비밀번호를 다시 확인하신 후 문제가 계속 발생할 경우 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
-                                    return;
-                                }
                             }
-                        });
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        hideProgressDialog();
+                        Toast.makeText(activity_signin.this, "로그인을 완료하지 못했습니다.\n이메일과 비밀번호를 다시 확인하신 후 문제가 계속 발생할 경우 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
+                        Log.d("Sign in", String.valueOf(e));
+                    }
+                });
 
             }
         });

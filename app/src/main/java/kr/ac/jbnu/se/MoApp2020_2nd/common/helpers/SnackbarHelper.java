@@ -114,7 +114,7 @@ public final class SnackbarHelper {
             messageSnackbar.getView().setBackgroundColor(BACKGROUND_COLOR);
             if (dismissBehavior != DismissBehavior.HIDE) {
               messageSnackbar.setAction(
-                  "Dismiss",
+                  "무시",
                   new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
