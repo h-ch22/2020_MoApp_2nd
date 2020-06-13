@@ -41,6 +41,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -55,7 +56,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class activity_memory extends activity_diary implements OnMapReadyCallback, interface_timeCapsule_googleMap{
+public class activity_memory extends BaseActivity implements OnMapReadyCallback, interface_timeCapsule_googleMap{
     private GridView gridView;
     private static ArrayList<String> listOfAllImages = new ArrayList<String>();
     private ArrayList<String> images;
@@ -65,24 +66,26 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     LocationRequest mLocationRequest;
-    Map<String, String> latitudeMap = new HashMap<String, String>();
-    Map<String, String> longitudeMap = new HashMap<String, String>();
+    ArrayList<String> latitudeList = new ArrayList<>();
+    ArrayList<String> longitudeList = new ArrayList<>();
     private String exif_latitude, exif_longitude, ref_latitude, ref_longitude;
     private Float float_latitude, float_longitude;
     private String Str_latitude;
     private String Str_longitude;
     double latitude, longitude;
+    public static String date;
     long latitudeL, longitudeL;
     Context context = this;
     int cnt = 0;
     private boolean zoomOut = false;
+    TextView memory;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_memory);
-        final TextView memory = findViewById(R.id.memory);
 
+        memory = findViewById(R.id.memory);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -111,6 +114,14 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
             memory.setText(activity_diary.selYear + "년 " + activity_diary.selMonth + "월 " + activity_diary.selDay + "일에 남긴 흔적들");
             fullDate = activity_diary.selYear + "/" + activity_diary.selMonth + "/" + activity_diary.selDay;
         }
+    }
+
+    protected void onStop() {
+        super.onStop();
+
+        images.clear();
+        listOfAllImages.clear();
+        memory.setText(null);
     }
 
     private class ImageAdapter extends BaseAdapter {
@@ -162,30 +173,20 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
 
         MarkerOptions markerOptions = new MarkerOptions();
 
-        for(int i = 0; i < latitudeMap.size(); i++){
-            for(String key : latitudeMap.keySet()){
-                Str_latitude = latitudeMap.get(key);
-                if(!Str_latitude.equals(null)){
-                    latitude = Double.parseDouble(Str_latitude);
-                }
+        for(int i = 0; i < latitudeList.size(); i++){
+            Str_latitude = latitudeList.get(i);
+            Str_longitude = longitudeList.get(i);
+
+            if(!Str_latitude.equals(null) && !Str_longitude.equals(null)){
+                latitude = Double.parseDouble(Str_latitude);
+                longitude = Double.parseDouble(Str_longitude);
+
+                createMarker(latitude, longitude);
+
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 14.0f));
+
             }
-
-            for(String key_longitude : longitudeMap.keySet()){
-                Str_longitude = longitudeMap.get(key_longitude);
-                if(!Str_longitude.equals(null)){
-                    longitude = Double.parseDouble(Str_longitude);
-                }
-            }
-
-            markerOptions.snippet(Str_latitude + ", " + Str_longitude);
-
-            markerOptions.position(new LatLng(latitude, longitude));
-
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 14.0f));
-
-            googleMap.addMarker(markerOptions);
         }
-
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -209,6 +210,12 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
             }
         });
     }
+
+    protected Marker createMarker(double latitudeM, double longitudeM){
+        return mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(latitudeM, longitudeM)));
+    }
+
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -309,7 +316,6 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
         while(cursor.moveToNext()){
             absolutePathOfImage = cursor.getString(column_index_data);
             ExifInterface exifInterface = new ExifInterface(cursor.getString(column_index_data));
-            String date;
             Log.d("loc : ", exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE) + exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
 
             if(activity_diary.selYear == null || activity_diary.selMonth == null || activity_diary.selDay == null){
@@ -332,44 +338,47 @@ public class activity_memory extends activity_diary implements OnMapReadyCallbac
             Date exif;
             SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
             String captureDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
-            String[] partDate = captureDate.split(":");
-            String newDate = partDate[0] + "/" + partDate[1] + "/" + partDate[2] + ":" + partDate[3] + ":" + partDate[4];
+
+            if (captureDate != null) {
+                String[] partDate = captureDate.split(":");
+                String newDate = partDate[0] + "/" + partDate[1] + "/" + partDate[2] + ":" + partDate[3] + ":" + partDate[4];
 
 
-            exif = format.parse(newDate);
-            String newCaptureDate = format.format(exif);
+                exif = format.parse(newDate);
+                String newCaptureDate = format.format(exif);
 
-            if(newCaptureDate.equals(date)){
-                listOfAllImages.add(absolutePathOfImage);
+                if(newCaptureDate.equals(date)){
+                    listOfAllImages.add(absolutePathOfImage);
 
-                exif_latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
-                exif_longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
-                ref_latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
-                ref_longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+                    exif_latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+                    exif_longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+                    ref_latitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+                    ref_longitude = exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
 
-                if(exif_latitude != null && exif_longitude != null && ref_latitude != null && ref_longitude != null){
-                    if(ref_latitude.equals("N")){
-                        float_latitude = convertToDegree(exif_latitude);
+                    if(exif_latitude != null && exif_longitude != null && ref_latitude != null && ref_longitude != null){
+                        if(ref_latitude.equals("N")){
+                            float_latitude = convertToDegree(exif_latitude);
+                        }
+
+                        else{
+                            float_latitude = 0 - convertToDegree(exif_latitude);
+                        }
+
+                        if(ref_longitude.equals("E")){
+                            float_longitude = convertToDegree(exif_longitude);
+                        }
+
+                        else{
+                            float_longitude = 0 - convertToDegree(exif_longitude);
+                        }
                     }
 
-                    else{
-                        float_latitude = 0 - convertToDegree(exif_latitude);
-                    }
+                    Log.d("loc : ", String.valueOf(float_latitude) + String.valueOf(float_longitude));
+                    latitudeList.add(String.valueOf(float_latitude));
+                    longitudeList.add(String.valueOf(float_longitude));
 
-                    if(ref_longitude.equals("E")){
-                        float_longitude = convertToDegree(exif_longitude);
-                    }
-
-                    else{
-                        float_longitude = 0 - convertToDegree(exif_longitude);
-                    }
+                    cnt++;
                 }
-
-                Log.d("loc : ", String.valueOf(float_latitude) + String.valueOf(float_longitude));
-                latitudeMap.put("latitude" + cnt, String.valueOf(float_latitude));
-                longitudeMap.put("longitude" + cnt, String.valueOf(float_longitude));
-
-                cnt++;
             }
         }
 

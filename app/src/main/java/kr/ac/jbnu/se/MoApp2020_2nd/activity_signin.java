@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -27,9 +28,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class activity_signin extends BaseActivity {
     EditText email, password;
@@ -39,12 +43,13 @@ public class activity_signin extends BaseActivity {
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
     GoogleSignInClient mGoogleSignInClient;
     private static final int RC_SIGN_IN = 9001;
-    CallbackManager mCallbackManager = CallbackManager.Factory.create();
+    CallbackManager mCallbackManager;
 
     protected void onCreate(Bundle savedInstancestate) {
         super.onCreate(savedInstancestate);
         setContentView(R.layout.layout_signin);
 
+        mCallbackManager = CallbackManager.Factory.create();
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
         register = findViewById(R.id.register);
@@ -68,48 +73,26 @@ public class activity_signin extends BaseActivity {
         });
 
 
-        Facebook_Signin.setReadPermissions("email");
+        Facebook_Signin.setReadPermissions("email", "public_profile");
 
         Facebook_Signin.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-
+                handleFacebookAccessToken(loginResult.getAccessToken());
             }
 
             @Override
             public void onCancel() {
+                toastMessage("Facebook 로그인이 취소되었습니다.");
                 // App code
             }
 
             @Override
             public void onError(FacebookException exception) {
+                toastMessage("Facebook 로그인 중 오류가 발생하였습니다.\n" + exception);
                 // App code
             }
         });
-
-        LoginManager.getInstance().registerCallback(mCallbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        Log.d("Sign-in with Facebook", "Sign-in with Facebook was completed.");
-                        toastMessage("Facebook 로그인 완료");
-                        Intent intent = new Intent(activity_signin.this, dialog_register.class);
-                        startActivity(intent);
-                        finish();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Log.d("Sign-in with Facebook", "Sign-in with Facebook was canceled");
-                        toastMessage("사용자의 요청에 의해 Facebook 로그인이 취소되었습니다.");
-                    }
-
-                    @Override
-                    public void onError(FacebookException exception) {
-                        Log.d("Sign-in with Facebook", "Sign-in with Facebook was Failed : " + exception);
-                        toastMessage("Facebook 로그인 실패 : Facebook에 등록된 E-mail과 동일한 E-mail로 회원가입을 진행한 적이 있는지 확인하세요.");
-                    }
-                });
 
         signin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,23 +164,18 @@ public class activity_signin extends BaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
             } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
                 Log.w("Sign-in with Google", "Google sign in failed" + e);
                 toastMessage("Google 로그인이 완료되지 않았습니다.");
             }
         }
-
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
@@ -225,6 +203,26 @@ public class activity_signin extends BaseActivity {
 
                     }
                 });
+    }
+
+    protected void handleFacebookAccessToken(AccessToken token){
+        showProgressDialog();
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    updateUI(user);
+                }
+                else{
+                    toastMessage("Facebook 로그인을 완료하지 못하였습니다.");
+                    Log.d("Sign-in with Facebook", String.valueOf(task.getException()));
+                }
+            }
+        });
+
+        hideProgressDialog();
     }
 
     private void updateUI(FirebaseUser user) {

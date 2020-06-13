@@ -34,7 +34,6 @@ public class BackgroundRenderer {
     }
 
     public void createOnGlThread(Context context) {
-        // Generate the background texture.
         int textures[] = new int[1];
         GLES20.glGenTextures(1, textures, 0);
         mTextureId = textures[0];

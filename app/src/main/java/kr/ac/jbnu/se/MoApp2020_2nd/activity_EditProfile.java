@@ -185,8 +185,9 @@ public class activity_EditProfile extends AppCompatActivity {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 Toast.makeText(activity_EditProfile.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
+                                                Intent intent = new Intent(activity_EditProfile.this, activity_tutorial.class);
+                                                startActivity(intent);
                                                 finish();
-                                                startActivity(new Intent(getApplicationContext(), activity_tutorial.class));
                                             }
                                         });
                             }

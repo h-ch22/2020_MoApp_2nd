@@ -3,10 +3,12 @@ package kr.ac.jbnu.se.MoApp2020_2nd;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -117,7 +119,6 @@ public class activity_createTimeCapsule extends BaseActivity {
         add_people.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveData();
                 Intent intent = new Intent(activity_createTimeCapsule.this, dialog_addFriend.class);
                 startActivity(intent);
                 finish();
@@ -197,7 +198,8 @@ public class activity_createTimeCapsule extends BaseActivity {
 
                     for(String s : dialog_addFriend.Checked){
                         if(!s.equals("")){
-                            db.collection("Users").document(s).set(enableTimeCapsule, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            String[] name = s.split("\n");
+                            db.collection("Users").document(name[0]).set(enableTimeCapsule, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
 
@@ -234,12 +236,17 @@ public class activity_createTimeCapsule extends BaseActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != intent) {
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK) {
             mClipData = intent.getClipData();
 
             if (intent.getClipData() != null) {
-                for (int i = 0; i < mClipData.getItemCount(); i++) {
-                    ClipData.Item item = mClipData.getItemAt(i);
+                if(mClipData.getItemCount() == 0){
+                    toastMessage("선택된 아이템이 없습니다.");
+                }
+
+                if(mClipData.getItemCount() <= 1){
+                    ClipData.Item item = mClipData.getItemAt(0);
+
                     Uri uri = item.getUri();
                     imageUri.add(uri);
 
@@ -251,8 +258,50 @@ public class activity_createTimeCapsule extends BaseActivity {
 
                     linearLayout.addView(imageView);
                 }
+
+                else{
+                    for (int i = 0; i < mClipData.getItemCount(); i++) {
+                        ClipData.Item item = mClipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        imageUri.add(uri);
+
+                        ImageView imageView = new ImageView(this);
+                        imageView.setImageURI(uri);
+                        LinearLayout linearLayout = findViewById(R.id.addedDataLayout);
+                        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(200, 200);
+                        imageView.setLayoutParams(params);
+
+                        linearLayout.addView(imageView);
+                    }
+                }
+            }
+
+            if(intent.getClipData() == null){
+                Uri singleUri = intent.getData();
+                imageUri.add(singleUri);
+
+                ImageView imageView = new ImageView(this);
+                imageView.setImageURI(singleUri);
+                LinearLayout linearLayout = findViewById(R.id.addedDataLayout);
+                ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(200, 200);
+                imageView.setLayoutParams(params);
+
+                linearLayout.addView(imageView);
             }
         }
+    }
+
+    protected void onStop() {
+        super.onStop();
+
+        SharedPreferences.Editor editor = Data.edit();
+
+        editor.putString("TimeCapsule_Name", timecapsule_name.getText().toString());
+        editor.putInt("Open_hour", hour);
+        editor.putInt("Open_minute", minute);
+        editor.putString("Open_date", open_date);
+
+        editor.apply();
     }
 
     private void updateLabel(){
@@ -262,17 +311,6 @@ public class activity_createTimeCapsule extends BaseActivity {
         pick_date.setText(sdf.format(selDate.getTime()));
 
         open_date = pick_date.getText().toString();
-    }
-
-    private void saveData(){
-        SharedPreferences.Editor editor = Data.edit();
-
-        editor.putString("TimeCapsule_Name", timecapsule_name.getText().toString());
-        editor.putInt("Open_hour", hour);
-        editor.putInt("Open_minute", minute);
-        editor.putString("Open_date", open_date);
-
-        editor.apply();
     }
 
     private void loadData(){

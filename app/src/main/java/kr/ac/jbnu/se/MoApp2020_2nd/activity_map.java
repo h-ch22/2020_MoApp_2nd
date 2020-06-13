@@ -54,27 +54,38 @@ public class activity_map extends BaseActivity implements OnMapReadyCallback, Go
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
 
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+
+                buildGoogleApiClient();
+                googleMap.setMyLocationEnabled(true);
+            } else {
+                checkLocationPermission();
+            }
+        }
+        else {
+            buildGoogleApiClient();
+            googleMap.setMyLocationEnabled(true);
+        }
+
+        mMap.setMyLocationEnabled(true);
+        if (mMap != null) {
+            mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+                @Override
+                public void onMyLocationChange(Location arg0) {
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("현재 위치"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()),11));
+                }
+            });
+        }
+
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
                 MarkerOptions markerOptions = new MarkerOptions();
-
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-
-                        buildGoogleApiClient();
-                        googleMap.setMyLocationEnabled(true);
-                    } else {
-                        checkLocationPermission();
-                    }
-                }
-                else {
-                    buildGoogleApiClient();
-                    googleMap.setMyLocationEnabled(true);
-                }
-
 
                 markerOptions.title("좌표");
                 latitude = latLng.latitude;

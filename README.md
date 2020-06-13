@@ -21,3 +21,6 @@
 - Change Log : Now you can take a photo with ARCore, All-New AR Activity, Collect information when you sign-in with your SNS account, Google Map camera is move to your marker automatically in memory activity
 - Fixed : Previous Diary not showing bug is Fixed, now not showing keyboard when you click birthday edittext field.
 - Bugs : Stable.
+
+2020 - 06 - 11
+- Change Log : Fixed All Known Issues.

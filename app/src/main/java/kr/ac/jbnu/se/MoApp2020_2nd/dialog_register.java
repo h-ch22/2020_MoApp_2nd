@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,6 +21,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
+
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
@@ -112,6 +113,7 @@ public class dialog_register extends BaseActivity {
                         public void onSuccess(Void aVoid) {
                             Log.d("Sign-up", "Send User Data to Server was Successfully completed");
                             toastMessage("사용자 데이터를 서버에 정상적으로 저장하였습니다.");
+
                             Intent intent = new Intent(dialog_register.this, activity_tutorialFinish.class);
                             startActivity(intent);
                             finish();

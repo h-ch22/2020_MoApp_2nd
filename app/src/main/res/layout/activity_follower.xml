@@ -1,171 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    tools:context=".activity_Follower">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/add_backbtn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/abc_vector_test"
-            android:backgroundTint="#000000" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="20sp"
-        android:text="Followers"
-        android:textSize="18sp" />
-
-    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="10sp">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
+            android:text="Follower"
+            android:textSize="24sp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp">
 
             <LinearLayout
+                android:id="@+id/followerList"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/profile_1"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_user" />
-
-                <TextView
-                    android:id="@+id/friend_1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="0.9"
-                    android:textSize="18sp" />
             </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
-
-                <ImageView
-                    android:id="@+id/profile_2"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_mypage_selected"
-                    />
-
-                <TextView
-                    android:id="@+id/friend_2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
-
-                <ImageView
-                    android:id="@+id/profile_3"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_mypage_selected" />
-
-                <TextView
-                    android:id="@+id/friend_3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
-
-                <ImageView
-                    android:id="@+id/profile_4"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_mypage_selected" />
-
-                <TextView
-                    android:id="@+id/friend_4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
-
-                <ImageView
-                    android:id="@+id/profile_5"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_mypage_selected" />
-
-                <TextView
-                    android:id="@+id/friend_5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="10sp">
-
-                <ImageView
-                    android:id="@+id/profile_6"
-                    android:layout_width="30dp"
-                    android:layout_height="60dp"
-                    android:layout_weight="0.1"
-                    app:srcCompat="@drawable/ic_mypage_selected" />
-
-                <TextView
-                    android:id="@+id/friend_6"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.9" />
-            </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

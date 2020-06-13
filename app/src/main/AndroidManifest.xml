@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="kr.ac.jbnu.se.MoApp2020_2nd">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -25,7 +24,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity_Following"></activity>
+        <activity android:name=".ViewProfile"></activity>
+        <activity android:name=".activity_Following" />
         <activity android:name=".activity_Follower" />
         <activity android:name=".activity_EditProfile" />
         <activity android:name=".activity_addFriend" />
@@ -59,61 +59,46 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity_tutorial"
             android:label="@string/app_name"
             android:theme="@style/Theme_Tutorial">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".BaseActivity" />
-
         <activity
             android:name=".activity_tutorialRegister"
             android:theme="@style/Theme_Tutorial" />
-
         <activity
             android:name=".activity_tutorialFinish"
             android:theme="@style/Theme_Tutorial" />
-
         <activity
             android:name=".activity_signin"
             android:theme="@style/Theme_Tutorial" />
-
         <activity
             android:name=".activity_resetPassword"
             android:theme="@style/Theme_Tutorial" />
-
         <activity android:name=".activity_diary" />
         <activity android:name=".activity_main" />
         <activity android:name=".activity_createTimeCapsule" />
-
         <activity
             android:name=".dialog_addFriend"
             android:theme="@style/Theme.AppCompat.Light.Dialog" />
-
         <activity android:name=".activity_map" />
         <activity android:name=".activity_timeCapsule" />
-        <activity android:name=".activity_openTimeCapsule" />
-
         <activity
             android:name=".activity_ar"
             android:theme="@style/Theme_Tutorial" />
-
         <activity android:name=".activity_inTimeCapsule" />
         <activity android:name=".activity_arStart" />
-        <activity android:name=".activity_memory"/>
-
+        <activity android:name=".activity_memory" />
         <activity
             android:name=".activity_addHabit"
             android:theme="@style/Theme.AppCompat.Light.Dialog" />
-
         <activity
             android:name=".dialog_register"
             android:theme="@style/Theme.AppCompat.Light.Dialog" />
@@ -127,7 +112,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>
